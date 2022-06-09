@@ -8,13 +8,42 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 const ConfigFileName = "application"
 
 var profile *Profile
+
+var once sync.Once
+var isCallFromTest = false
+
+type TestSensor func() bool
+
+type TestSensible interface {
+	CallFromTest() bool
+}
+
+var testSensor TestSensor = func() bool {
+	once.Do(func() {
+		// call stack is expected less than 30
+		pcs := make([]uintptr, 30)
+		n := runtime.Callers(0, pcs)
+		pcs = pcs[:n]
+		frames := runtime.CallersFrames(pcs)
+		for {
+			frame, more := frames.Next()
+			if !more || isCallFromTest {
+				break
+			}
+			isCallFromTest, _ = regexp.MatchString(".*_test\\.go$", frame.File)
+		}
+	})
+	return isCallFromTest
+}
 
 func init() {
 	profile = &Profile{
@@ -38,18 +67,22 @@ type Profile struct {
 	name string
 }
 
-func CurrentProfile() string {
+func ActiveProfile() string {
 	return profile.name
 }
 
-func With(p string) error {
+func With(p string) {
+	profile.name = p
 	name := fmt.Sprintf("%s-%s", ConfigFileName, p)
-	f := profile.searchInPath(".", name)
+	f := searchInPath(".", name)
 	file, err := afero.ReadFile(profile.Fs, f)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	return profile.MergeConfig(bytes.NewReader(file))
+	err = profile.MergeConfig(bytes.NewReader(file))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func absPathify(inPath string) string {
@@ -80,9 +113,9 @@ func userHomeDir() string {
 	return os.Getenv("HOME")
 }
 
-func (env *Profile) searchInPath(in, name string) (filename string) {
+func searchInPath(in, name string) (filename string) {
 	for _, ext := range viper.SupportedExts {
-		if b, _ := exists(env.Fs, filepath.Join(in, name+"."+ext)); b {
+		if b, _ := exists(profile.Fs, filepath.Join(in, name+"."+ext)); b {
 			return filepath.Join(in, name+"."+ext)
 		}
 	}
