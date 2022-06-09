@@ -1,0 +1,9 @@
+datasource:
+  driver: sqlite3
+  host:
+  port:
+  username: def
+  password:
+  url: file:ent?mode=memory&cache=shared&_fk=1
+
+
