@@ -20,6 +20,7 @@ func init() {
 	profile = &Profile{
 		viper.New(),
 		afero.NewOsFs(),
+		"default",
 	}
 	profile.SetConfigName(ConfigFileName)
 	profile.SetConfigType("yml")
@@ -34,6 +35,11 @@ func init() {
 type Profile struct {
 	*viper.Viper
 	afero.Fs
+	name string
+}
+
+func CurrentProfile() string {
+	return profile.name
 }
 
 func With(p string) error {
