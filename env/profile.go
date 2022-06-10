@@ -15,16 +15,11 @@ import (
 )
 
 const configFileName = "application"
-const testContext = "test"
-const defaultContext = "default"
+const testProfile = "test"
+const defaultProfile = "default"
 
 var profile *Profile
 var once sync.Once
-
-type Resource interface {
-	Key() string
-	Object() interface{}
-}
 
 var ActiveProfile = func() *Profile {
 	once.Do(func() {
@@ -40,7 +35,7 @@ var ActiveProfile = func() *Profile {
 			}
 			isCallFromTest, _ := regexp.MatchString(".*_test\\.go$", frame.File)
 			if isCallFromTest {
-				withProfile(testContext)
+				withProfile(testProfile)
 				break
 			}
 		}
@@ -52,11 +47,12 @@ func init() {
 	profile = &Profile{
 		viper.New(),
 		afero.NewOsFs(),
-		defaultContext,
+		defaultProfile,
 	}
 	profile.SetConfigName(configFileName)
 	profile.SetConfigType("yml")
 	profile.AddConfigPath(".")
+	profile.AddConfigPath("../")
 	err := profile.ReadInConfig()
 	if err != nil {
 		panic(fmt.Errorf("Fatal error config file: %w \n", err))
@@ -70,17 +66,29 @@ type Profile struct {
 	name string
 }
 
+func (p *Profile) IsTest() bool {
+	return p.name == testProfile
+}
+
 func withProfile(p string) {
 	profile.name = p
 	name := fmt.Sprintf("%s-%s", configFileName, p)
-	f := searchInPath(".", name)
-	file, err := afero.ReadFile(profile.Fs, f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = profile.MergeConfig(bytes.NewReader(file))
-	if err != nil {
-		log.Fatal(err)
+
+	for _, i := range []string{".", "../"} {
+		f := searchInPath(i, name)
+		if f == "" {
+			continue
+		}
+		file, err := afero.ReadFile(profile.Fs, f)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = profile.MergeConfig(bytes.NewReader(file))
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			break
+		}
 	}
 }
 
