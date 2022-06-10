@@ -1,4 +1,4 @@
-module github.com/kcmvp/profile
+module github.com/kcmvp/gbt
 
 go 1.18
 
