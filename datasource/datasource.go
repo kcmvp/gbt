@@ -1,8 +1,8 @@
-package resource
+package datasource
 
 import (
 	"fmt"
-	env "github.com/kcmvp/gbt"
+	env "github.com/kcmvp/gbt/env"
 )
 
 const (
@@ -42,7 +42,7 @@ func (ds *DataSource) DsName() (string, error) {
 	}
 }
 
-func ActiveDatasource() (*DataSource, error) {
+func Datasource() (*DataSource, error) {
 	ds := &DataSource{}
 	err := env.ActiveProfile().UnmarshalKey(datasourceKey, ds)
 	return ds, err

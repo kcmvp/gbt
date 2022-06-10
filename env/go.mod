@@ -1,11 +1,10 @@
-module github.com/kcmvp/gbt
+module github.com/kcmvp/gbt/env
 
 go 1.18
 
 require (
 	github.com/spf13/afero v1.8.2
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.7.2
 )
 
 require (
