@@ -1,4 +1,4 @@
-package profile
+package env
 
 import (
 	"bytes"
@@ -14,20 +14,19 @@ import (
 	"sync"
 )
 
-const ConfigFileName = "application"
+const configFileName = "application"
+const testContext = "test"
+const defaultContext = "default"
 
 var profile *Profile
-
 var once sync.Once
-var isCallFromTest = false
 
-type TestSensor func() bool
-
-type TestSensible interface {
-	CallFromTest() bool
+type Resource interface {
+	Key() string
+	Object() interface{}
 }
 
-var testSensor TestSensor = func() bool {
+var ActiveProfile = func() *Profile {
 	once.Do(func() {
 		// call stack is expected less than 30
 		pcs := make([]uintptr, 30)
@@ -36,22 +35,26 @@ var testSensor TestSensor = func() bool {
 		frames := runtime.CallersFrames(pcs)
 		for {
 			frame, more := frames.Next()
-			if !more || isCallFromTest {
+			if !more {
 				break
 			}
-			isCallFromTest, _ = regexp.MatchString(".*_test\\.go$", frame.File)
+			isCallFromTest, _ := regexp.MatchString(".*_test\\.go$", frame.File)
+			if isCallFromTest {
+				withProfile(testContext)
+				break
+			}
 		}
 	})
-	return isCallFromTest
+	return profile
 }
 
 func init() {
 	profile = &Profile{
 		viper.New(),
 		afero.NewOsFs(),
-		"default",
+		defaultContext,
 	}
-	profile.SetConfigName(ConfigFileName)
+	profile.SetConfigName(configFileName)
 	profile.SetConfigType("yml")
 	profile.AddConfigPath(".")
 	err := profile.ReadInConfig()
@@ -67,13 +70,9 @@ type Profile struct {
 	name string
 }
 
-func ActiveProfile() string {
-	return profile.name
-}
-
-func With(p string) {
+func withProfile(p string) {
 	profile.name = p
-	name := fmt.Sprintf("%s-%s", ConfigFileName, p)
+	name := fmt.Sprintf("%s-%s", configFileName, p)
 	f := searchInPath(".", name)
 	file, err := afero.ReadFile(profile.Fs, f)
 	if err != nil {
@@ -83,6 +82,10 @@ func With(p string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (p Profile) Name() string {
+	return p.name
 }
 
 func absPathify(inPath string) string {

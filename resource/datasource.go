@@ -1,6 +1,9 @@
-package profile
+package resource
 
-import "fmt"
+import (
+	"fmt"
+	env "github.com/kcmvp/gbt"
+)
 
 const (
 	MySQL    = "mysql"
@@ -8,9 +11,7 @@ const (
 	Postgres = "postgres"
 )
 
-const datasource_key = "datasource"
-
-var _ TestSensible = (*DataSource)(nil)
+const datasourceKey = "datasource"
 
 type DataSource struct {
 	Driver   string
@@ -20,10 +21,6 @@ type DataSource struct {
 	Password string
 	Db       string
 	Url      string
-}
-
-func (ds *DataSource) CallFromTest() bool {
-	return testSensor()
 }
 
 func (ds *DataSource) DsName() (string, error) {
@@ -45,11 +42,8 @@ func (ds *DataSource) DsName() (string, error) {
 	}
 }
 
-func GetDatasource() (*DataSource, error) {
+func ActiveDatasource() (*DataSource, error) {
 	ds := &DataSource{}
-	if ds.CallFromTest() {
-		With("test")
-	}
-	err := profile.UnmarshalKey(datasource_key, ds)
+	err := env.ActiveProfile().UnmarshalKey(datasourceKey, ds)
 	return ds, err
 }

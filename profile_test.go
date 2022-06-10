@@ -1,13 +1,14 @@
-package profile
+package env
 
 import (
+	"github.com/kcmvp/gbt/resource"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestDatasource(t *testing.T) {
 	assert.True(t, true, "True is true!")
-	ds, _ := GetDatasource()
+	ds, _ := resource.ActiveDatasource()
 	dsName, _ := ds.DsName()
 	assert.Equal(t, "sqlite3", ds.Driver, "Driver should be sqlite3")
 	assert.Equal(t, "file:ent?mode=memory&cache=shared&_fk=1", ds.Url, "Driver should be sqlite3")
