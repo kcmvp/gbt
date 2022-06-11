@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"strings"
 	"sync"
 )
 
@@ -94,23 +93,6 @@ func withProfile(p string) {
 
 func (p Profile) Name() string {
 	return p.name
-}
-
-func absPathify(inPath string) string {
-	if inPath == "$HOME" || strings.HasPrefix(inPath, "$HOME"+string(os.PathSeparator)) {
-		inPath = userHomeDir() + inPath[5:]
-	}
-
-	inPath = os.ExpandEnv(inPath)
-
-	if filepath.IsAbs(inPath) {
-		return filepath.Clean(inPath)
-	}
-	p, err := filepath.Abs(inPath)
-	if err == nil {
-		return filepath.Clean(p)
-	}
-	return ""
 }
 
 func userHomeDir() string {
