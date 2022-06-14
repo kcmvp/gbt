@@ -9,6 +9,8 @@ import (
 )
 
 const mod = "mod"
+const application = "application.yml"
+const applicationTest = "application-test.yml"
 
 var not_in_root = fmt.Errorf("please run the command in the root directory")
 

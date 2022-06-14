@@ -3,31 +3,57 @@ package cmd
 import (
 	"fmt"
 	"github.com/magefile/mage/mage"
-	"github.com/magefile/mage/mg"
-	"github.com/magefile/mage/sh"
 	"github.com/spf13/cobra"
+	"os"
 )
 
-func mageCmd() *cobra.Command {
+var mageInitF = func(cmd *cobra.Command, args []string) {
+	if _, err := os.Stat(mage.MagefilesDirName); err != nil {
+		os.Mkdir(mage.MagefilesDirName, 0755)
+		fmt.Printf("create mage folder %s successfully\n", mage.MagefilesDirName)
+	} else {
+		fmt.Printf("mage folder %s exists\n", mage.MagefilesDirName)
+	}
+}
+
+func mageInitCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "mage",
-		Short: "init the project configuration file. Run this command at your project root directory",
-		Args: func(_ *cobra.Command, names []string) error {
-			fmt.Println("list:Args")
+		Use:   "init",
+		Short: "init mage build files in the root directory",
+		Args: func(cmd *cobra.Command, args []string) error {
 			return nil
 		},
-		Run: func(cmd *cobra.Command, names []string) {
+		Run: mageInitF,
+	}
+	return cmd
+}
+
+func mageBuildCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "build",
+		Short: "build current project",
+		Args: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
 			mage.Main()
 		},
 	}
 	return cmd
 }
 
-func Build() error {
-	return nil
-}
-
-func Run() {
-	mg.Deps(Build)
-	sh.RunV("./start.sh")
+func mageCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "mage [init]",
+		Short: "Generate project build file.",
+		Args: func(_ *cobra.Command, names []string) error {
+			fmt.Println("mage Args")
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("in the mageCMD")
+		},
+	}
+	//cmd.AddCommand(mageInitCmd())
+	return cmd
 }
