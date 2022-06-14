@@ -1,10 +1,11 @@
 /*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
+Copyright © 2022 ken Cheng <kcheng.mvp@gmail.com>
 */
 package cmd
 
 import (
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -19,13 +20,9 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRunE: preValidateE,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -34,16 +31,16 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gbt-cli.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
+	rootCmd.AddCommand(initCmd())
+	rootCmd.AddCommand(listCmd())
+	rootCmd.AddCommand(generateCmd())
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
 
-	//@todo find and parse go.mod file
-	
+// examples formats the given examples to the cli.
+func examples(ex ...string) string {
+	for i := range ex {
+		ex[i] = "  " + ex[i] // indent each row with 2 spaces.
+	}
+	return strings.Join(ex, "\n")
 }
