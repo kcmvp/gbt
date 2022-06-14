@@ -13,7 +13,7 @@ type BasicTestSuite struct {
 	suite.Suite
 }
 
-func (s CommandTestSuit) SetupTest() {
+func (s RootTestSuit) SetupTest() {
 	_, b, _, _ := runtime.Caller(0)
 	root := filepath.Join(filepath.Dir(b), "../..")
 	err := os.Chdir(filepath.Join(root, "gbt-cli"))

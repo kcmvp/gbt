@@ -3,6 +3,7 @@ module github.com/kcmvp/gbt/gbt-cli
 go 1.18
 
 require (
+	github.com/magefile/mage v1.13.0
 	github.com/rogpeppe/go-internal v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.2
