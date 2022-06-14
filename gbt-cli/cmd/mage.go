@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/magefile/mage/mage"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/spf13/cobra"
@@ -16,7 +17,7 @@ func mageCmd() *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, names []string) {
-			fmt.Println("list:Run")
+			mage.Main()
 		},
 	}
 	return cmd
