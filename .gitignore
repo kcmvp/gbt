@@ -5,6 +5,7 @@
 *.dll
 *.so
 *.dylib
+gbt-cli
 
 # Test binary, built with `go test -c`
 *.test
