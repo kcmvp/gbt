@@ -2,9 +2,13 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"os"
 )
 
 //@todo create application.yml and application-test.yml and import github.com/kcmvp/gbt/env
+
+const application = "application.yml"
+const applicationTest = "application-test.yml"
 
 func initCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -15,10 +19,16 @@ func initCmd() *cobra.Command {
 			return nil
 		},
 		Run: func(cmd *cobra.Command, names []string) {
-			println("Run: init")
-			//initProject()
+			initBuilder(cmd, names)
 		},
-		//PreRunE: preValidateE,
 	}
 	return cmd
+}
+
+func initBuilder(cmd *cobra.Command, names []string) {
+	for _, f := range []string{application, applicationTest} {
+		if _, err := os.Stat(f); err != nil {
+			// init the file
+		}
+	}
 }
