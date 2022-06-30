@@ -47,6 +47,6 @@ func initializerCmd() *cobra.Command {
 			defaultApplication()
 		},
 	}
-	cmd.Flags().StringVarP(&appName, "name", "n", "gbt-app", "Set application name")
+	cmd.Flags().StringVarP(&appName, "name", "n", "gbt-app", "set application name")
 	return cmd
 }
