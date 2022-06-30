@@ -4,16 +4,35 @@ Copyright © 2022 ken Cheng <kcheng.mvp@gmail.com>
 package cmd
 
 import (
+	"context"
+	"golang.org/x/mod/modfile"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 )
 
+func preValidateE(cmd *cobra.Command, args []string) error {
+	if data, err := os.ReadFile("go.mod"); err != nil {
+		return NOT_IN_ROOT
+	} else {
+		if f, err := modfile.Parse("go.mod", data, nil); err != nil {
+			return NOT_IN_ROOT
+		} else {
+			context.WithValue(cmd.Context(), Mod, f)
+		}
+	}
+	return nil
+}
+
 var rootCmd = &cobra.Command{
-	Use:               "gbt-cli [mage]",
-	Short:             "Generate project scaffold for popular frameworks which list in the go.mod",
+	Use:               "gbt-cli",
+	Short:             "Generate project scaffold based on the dependencies",
+	Long:              "",
 	PersistentPreRunE: preValidateE,
+	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
+	},
 }
 
 func Execute() {
@@ -24,8 +43,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(mageCmd())
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.AddCommand(initializrCmd())
 }
 
 // examples formats the given examples to the cli.

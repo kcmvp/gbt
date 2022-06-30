@@ -1,28 +1,9 @@
 package cmd
 
-import (
-	"context"
-	"fmt"
-	"github.com/rogpeppe/go-internal/modfile"
-	"github.com/spf13/cobra"
-	"os"
-)
+import "fmt"
 
-const mod = "mod"
-const application = "application.yml"
-const applicationTest = "application-test.yml"
+const Mod = "mod"
+const Application = "application.yml"
+const ApplicationTest = "application-test.yml"
 
-var not_in_root = fmt.Errorf("please run the command in the root directory")
-
-func preValidateE(cmd *cobra.Command, args []string) error {
-	if data, err := os.ReadFile("go.mod"); err != nil {
-		return not_in_root
-	} else {
-		if f, err := modfile.Parse("go.mod", data, nil); err != nil {
-			return not_in_root
-		} else {
-			context.WithValue(cmd.Context(), mod, f)
-		}
-	}
-	return nil
-}
+var NOT_IN_ROOT = fmt.Errorf("please run the command in the root directory")

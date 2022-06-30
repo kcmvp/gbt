@@ -1,4 +1,4 @@
-package cmd
+package cmd_test
 
 import (
 	"github.com/stretchr/testify/require"
@@ -9,11 +9,17 @@ import (
 	"testing"
 )
 
+type command struct {
+	name string
+	cmd  string
+	args []string
+}
+
 type BasicTestSuite struct {
 	suite.Suite
 }
 
-func (s RootTestSuit) SetupTest() {
+func (s BasicTestSuite) SetupTest() {
 	_, b, _, _ := runtime.Caller(0)
 	root := filepath.Join(filepath.Dir(b), "../..")
 	err := os.Chdir(filepath.Join(root, "gbt-cli"))
