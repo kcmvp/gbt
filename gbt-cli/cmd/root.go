@@ -43,7 +43,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(initializrCmd())
+	rootCmd.AddCommand(initializerCmd())
 }
 
 // examples formats the given examples to the cli.
