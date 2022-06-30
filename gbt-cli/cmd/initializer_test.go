@@ -8,18 +8,19 @@ import (
 	"testing"
 )
 
-type RootTestSuit struct {
+type InitializrTestSuite struct {
 	BasicTestSuite
 }
 
-func (s *RootTestSuit) TestNotInRoot() {
-	cmd := exec.Command("go", "run", "github.com/kcmvp/gbt/gbt-cli")
+func (s *InitializrTestSuite) TestInit() {
+	cmd := exec.Command("go", "run", "github.com/kcmvp/gbt/gbt-cli init")
 	stderr := bytes.NewBuffer(nil)
 	stdout := bytes.NewBuffer(nil)
 	cmd.Stderr = stderr
 	cmd.Stdout = stdout
 	require.NoError(s.T(), cmd.Run())
 }
-func TestRootSuit(t *testing.T) {
+
+func TestInitializrSuite(t *testing.T) {
 	suite.Run(t, new(RootTestSuit))
 }
