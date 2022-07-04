@@ -17,8 +17,8 @@ var caller = "script/builder.go"
 
 const (
 	target       = "target"
-	coverage     = "test_coverage.out"
-	testData     = "test.json"
+	coverage     = "coverage.data"
+	testData     = "test.data"
 	coverageHtml = "index.html"
 )
 
