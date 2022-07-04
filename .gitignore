@@ -17,5 +17,5 @@
 .idea
 gbt-cli/gbt-cli
 gbt-cli/application.yml
-target/*
+target
 

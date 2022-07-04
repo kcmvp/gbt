@@ -7,6 +7,6 @@ import (
 
 func TestName(t *testing.T) {
 	setCaller("script/builder_test.go")
-	DefaultBuilder()
+	NewCQC()
 	assert.Equal(t, 1, 2)
 }

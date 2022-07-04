@@ -8,9 +8,9 @@ import (
 )
 
 func main() {
-	b, _ := script.DefaultBuilder()
-	if b.Clean() == nil {
-		if e := b.Test(); e != nil {
+	cqc, _ := script.NewCQC()
+	if cqc.Clean() == nil {
+		if e := cqc.Test(); e != nil {
 			fmt.Println(e)
 		}
 	}
