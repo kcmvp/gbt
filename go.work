@@ -4,4 +4,6 @@ use (
 	./datasource
 	./env
 	./gbt-cli
+	./sandbox
+	./script
 )
