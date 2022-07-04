@@ -64,9 +64,6 @@ func (b *CQC) Test() error {
 	os.MkdirAll(buildDir, os.ModePerm)
 	out, err := exec.Command("go", "test", "-v", "-json", "./...", "-coverprofile", filepath.Join(buildDir, coverage)).CombinedOutput()
 	fmt.Println(string(out))
-	if err != nil {
-		return err
-	}
 	os.WriteFile(filepath.Join(buildDir, testData), out, os.ModePerm)
 	return err
 }

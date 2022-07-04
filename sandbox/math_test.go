@@ -11,5 +11,5 @@ func TestAdd(t *testing.T) {
 }
 func TestMin(t *testing.T) {
 	sum := Minus(2, 1)
-	assert.Equal(t, 1, sum)
+	assert.Equal(t, 2, sum)
 }
