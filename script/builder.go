@@ -45,10 +45,6 @@ type Package struct {
 
 var pkgMap = make(map[string]*Package)
 
-//func setCaller(c string) {
-//	caller = c
-//}
-
 func NewCQC() (*CQC, error) {
 	cqc := &CQC{}
 	_, file, _, ok := runtime.Caller(1)
