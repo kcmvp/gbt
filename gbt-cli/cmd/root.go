@@ -5,11 +5,9 @@ package cmd
 
 import (
 	"context"
+	"github.com/spf13/cobra"
 	"golang.org/x/mod/modfile"
 	"os"
-	"strings"
-
-	"github.com/spf13/cobra"
 )
 
 func preValidateE(cmd *cobra.Command, args []string) error {
@@ -27,8 +25,8 @@ func preValidateE(cmd *cobra.Command, args []string) error {
 
 var rootCmd = &cobra.Command{
 	Use:               "gbt-cli",
-	Short:             "Generate project scaffold based on the dependencies",
-	Long:              "",
+	Short:             "gbt scaffold commands",
+	Long:              "Please run this command in the project root directory",
 	PersistentPreRunE: preValidateE,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
@@ -43,13 +41,6 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.AddCommand(initializerCmd())
-}
-
-// examples formats the given examples to the cli.
-func examples(ex ...string) string {
-	for i := range ex {
-		ex[i] = "  " + ex[i] // indent each row with 2 spaces.
-	}
-	return strings.Join(ex, "\n")
+	rootCmd.AddCommand(configCmd())
+	rootCmd.AddCommand(builderCmd())
 }

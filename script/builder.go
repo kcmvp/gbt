@@ -12,8 +12,9 @@ import (
 	"strings"
 )
 
-type CQC struct {
+type cQC struct {
 	root string
+	err  error
 }
 
 //var caller = "script/builder.go"
@@ -45,8 +46,14 @@ type Package struct {
 
 var pkgMap = make(map[string]*Package)
 
-func NewCQC() (*CQC, error) {
-	cqc := &CQC{}
+func InstallDependencies() {
+	//@todo install the missing dependencies
+}
+
+func NewCQC() *cQC {
+	cqc := &cQC{
+		err: nil,
+	}
 	_, file, _, ok := runtime.Caller(1)
 	if ok {
 		p := filepath.Dir(file)
@@ -59,21 +66,27 @@ func NewCQC() (*CQC, error) {
 			}
 		}
 	}
-	if len(cqc.root) > 0 {
-		return cqc, nil
-	} else {
-		return nil, fmt.Errorf("can not get project root directory")
+	if len(cqc.root) < 1 {
+		cqc.err = fmt.Errorf("can not get project root directory")
+	}
+	return cqc
+}
+
+func (cqc *cQC) ProjectRoot() string {
+	return cqc.root
+}
+
+func (cqc *cQC) validate() {
+	if cqc.err != nil {
+		log.Fatalf("Runs into error %v", cqc.err)
 	}
 }
 
-func (b CQC) ProjectRoot() string {
-	return b.root
-}
-
-func (b *CQC) Clean() error {
+func (cqc *cQC) Clean() *cQC {
+	cqc.validate()
 	fmt.Println("Clean project...")
-	os.RemoveAll(filepath.Join(b.root, target))
-	return nil
+	os.RemoveAll(filepath.Join(cqc.root, target))
+	return cqc
 }
 
 func getPkg(pgkName string) *Package {
@@ -153,39 +166,42 @@ func processCoverage(path string) {
 }
 
 // Test run the test with -race, -cover, -fuzz and -bench
-func (b *CQC) Test(args ...string) error {
+func (cqc *cQC) Test(args ...string) *cQC {
+	cqc.validate()
 	fmt.Println("Test project...")
-	os.Chdir(b.root)
-	buildDir := filepath.Join(b.root, target)
+	os.Chdir(cqc.root)
+	buildDir := filepath.Join(cqc.root, target)
 	os.MkdirAll(buildDir, os.ModePerm)
 	params := []string{"test", "-v", "-json", "./...", "-coverprofile", filepath.Join(buildDir, coverage)}
 	params = append(params, args...)
 	out, err := exec.Command("go", params...).CombinedOutput()
+	cqc.err = err
 	fmt.Println(string(out))
 	os.WriteFile(filepath.Join(buildDir, testData), out, os.ModePerm)
 	generateTestReport(filepath.Join(buildDir, testData))
 	processCoverage(filepath.Join(buildDir, coverage))
-	return err
+	return cqc
 }
 
 // Build walk from project root dir and run build command for each executable
 // and place the executable at ${project_root}/bin; in case there are more than one executable
-func (b *CQC) Build() error {
+func (cqc *cQC) Build() *cQC {
 	fmt.Println("Building project ...")
 	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
-	return cmd.Run()
+	cmd.Run()
+	return cqc
 }
 
-func (b *CQC) SecScan() error {
+func (cqc *cQC) SecScan() error {
 	//@todo gosec https://opensource.com/article/20/9/gosec
 	return nil
 }
 
-func (w *CQC) StaticCheck() error {
+func (cqc *cQC) StaticCheck() error {
 	panic("@todo https://staticcheck.io/docs/getting-started/")
 }
 
-func (b *CQC) Cyclomatic() error {
+func (cqc *cQC) Cyclomatic() error {
 
 	panic("@todo https://github.com/fzipp/gocyclo")
 }

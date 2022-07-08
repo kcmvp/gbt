@@ -3,7 +3,7 @@ module github.com/kcmvp/gbt/datasource
 go 1.18
 
 require (
-	github.com/kcmvp/gbt/env v0.0.0-20220610191130-702ba43c8acc
+	github.com/kcmvp/gbt/env latest
 	github.com/stretchr/testify v1.7.2
 )
 

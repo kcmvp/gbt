@@ -26,7 +26,7 @@ func TestScriptTestSuite(t *testing.T) {
 }
 
 func (suit *ScriptTestSuite) TestCleanTestFlow() {
-	cqc, _ := NewCQC()
+	cqc := NewCQC()
 	cqc.Clean()
 
 	_, err := os.Stat("./target/coverage.data")
@@ -45,7 +45,7 @@ func (suit *ScriptTestSuite) TestCleanTestFlow() {
 }
 
 func (suit *ScriptTestSuite) TestJsonDataIncludeDummy() {
-	cqc, _ := NewCQC()
+	cqc := NewCQC()
 	cqc.Clean()
 	cqc.Test(suit.args...)
 	data, err := os.ReadFile("./target/test.json")
@@ -64,7 +64,7 @@ func (suit *ScriptTestSuite) TestJsonDataIncludeDummy() {
 
 func (suit *ScriptTestSuite) TestJsonDataUncovered() {
 	pkgName := "github.com/kcmvp/gbt/script"
-	cqc, _ := NewCQC()
+	cqc := NewCQC()
 	cqc.Clean()
 	cqc.Test(suit.args...)
 	data, err := os.ReadFile("./target/test.json")

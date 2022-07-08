@@ -9,21 +9,26 @@ import (
 	"text/template"
 )
 
-//go:embed initializer-tmpl.yml
-var tmp string
+//go:embed template/initializer-tmpl.yml
+var configTemp string
 
-var appName string
+type configFlag struct {
+	appName string
+	update  bool
+}
 
-func defaultApplication() {
+var cfgFlag = configFlag{}
+
+func generateConfiguration() {
 	if _, err := os.ReadFile(Application); err != nil {
-		if t, err := template.New(Application).Parse(tmp); err != nil {
+		if t, err := template.New(Application).Parse(configTemp); err != nil {
 			fmt.Println(fmt.Sprintf("Failed to load the template, %+v", err))
 		} else {
 			if f, err := os.Create(Application); err != nil {
 				fmt.Println(fmt.Sprintf("Failed to create file, %+v", err))
 				return
 			} else {
-				if err = t.Execute(f, appName); err != nil {
+				if err = t.Execute(f, cfgFlag.appName); err != nil {
 					fmt.Println(fmt.Sprintf("Failed to create file %v, %+v", Application, err))
 				}
 				f.Close()
@@ -37,16 +42,17 @@ func defaultApplication() {
 	}
 }
 
-func initializerCmd() *cobra.Command {
+func configCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "init",
-		Short:     "Initialize system configuration files: application.yml",
+		Use:       "config",
+		Short:     "Generate system configuration files application.yml",
 		Args:      cobra.OnlyValidArgs,
-		ValidArgs: []string{"name"},
+		ValidArgs: []string{"name", "update"},
 		Run: func(cmd *cobra.Command, args []string) {
-			defaultApplication()
+			generateConfiguration()
 		},
 	}
-	cmd.Flags().StringVarP(&appName, "name", "n", "gbt-app", "set application name")
+	cmd.Flags().StringVarP(&cfgFlag.appName, "name", "n", "gbt-app", "set application name")
+	cmd.Flags().BoolVarP(&cfgFlag.update, "update", "u", false, "scan re-generate the configuration")
 	return cmd
 }
