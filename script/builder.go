@@ -50,25 +50,26 @@ func InstallDependencies() {
 	//@todo install the missing dependencies
 }
 
-func NewCQC() *cQC {
-	cqc := &cQC{
-		err: nil,
-	}
+func ProjectRoot() string {
 	_, file, _, ok := runtime.Caller(1)
 	if ok {
 		p := filepath.Dir(file)
 		for {
 			if _, err := os.ReadFile(filepath.Join(p, "go.mod")); err == nil {
-				cqc.root = p
-				break
+				return p
 			} else {
 				p = filepath.Dir(p)
 			}
 		}
 	}
-	if len(cqc.root) < 1 {
-		cqc.err = fmt.Errorf("can not get project root directory")
+	panic("Can't figure out project root directory")
+}
+
+func NewCQC() *cQC {
+	cqc := &cQC{
+		err: nil,
 	}
+	cqc.root = ProjectRoot()
 	return cqc
 }
 

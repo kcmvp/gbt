@@ -32,17 +32,18 @@ func generateConfiguration() {
 					fmt.Println(fmt.Sprintf("Failed to create file %v, %+v", Application, err))
 				}
 				f.Close()
-				abs, _ := filepath.Abs(filepath.Dir(f.Name()))
-				fmt.Println(fmt.Sprintf("create files: %+v successfully", abs))
+				abs, _ := filepath.Abs(f.Name())
+				fmt.Println(fmt.Sprintf("create files: %v successfully", abs))
 			}
 		}
 	} else {
-		fmt.Println(fmt.Sprintf("%v exists", Application))
+		pwd, _ := os.Getwd()
+		fmt.Println(fmt.Sprintf("%v/%v exists", pwd, Application))
 		return
 	}
 }
 
-func configCmd() *cobra.Command {
+func ConfigCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:       "config",
 		Short:     "Generate system configuration files application.yml",

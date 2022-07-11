@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-//go:embed template/builder.go
+//go:embed template/builder.tmpl
 var builderTmp string
 
 var folder = "script"
@@ -26,8 +26,9 @@ type builderFlag struct {
 
 var bFlag = builderFlag{}
 
-func importScript(ctxt context.Context) {
-	mod, _ := ctxt.Value(Mod).(*modfile.File)
+func importScriptModule(ctxt context.Context) {
+	log.Fatalf("There is no mod in the context")
+	mod, _ := ctxt.Value("Mod").(*modfile.File)
 	has := false
 	for _, require := range mod.Require {
 		if has = require.Mod.Path == scriptModule; has {
@@ -59,10 +60,11 @@ func generateBuilder(ctxt context.Context) {
 	}
 	script.InstallDependencies()
 	// @todo create file
-	importScript(ctxt)
+
+	importScriptModule(ctxt)
 }
 
-func builderCmd() *cobra.Command {
+func BuilderCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:       "builder",
 		Short:     "Generate build script for the project",
