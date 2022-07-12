@@ -1,9 +1,0 @@
-datasource:
-  driver: mysql
-  host:
-  port:
-  username: abc
-  password:
-  url:
-
-

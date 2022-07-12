@@ -1,7 +1,10 @@
 package script
 
 import (
+	"bufio"
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -9,86 +12,197 @@ import (
 	"strings"
 )
 
-type CQC struct {
+type cQC struct {
 	root string
+	err  error
 }
 
-var caller = "script/builder.go"
+//var caller = "script/builder.go"
 
 const (
-	target       = "target"
-	coverage     = "coverage.data"
-	testData     = "test.data"
-	coverageHtml = "index.html"
+	target   = "target"
+	coverage = "coverage.data"
+	testData = "test.data"
+	testJson = "test.json"
+	report   = "index.html"
 )
 
-func setCaller(c string) {
-	caller = c
+type TestCase struct {
+	Package string
+	Test    string
+	Action  string
+	Output  string
+	Elapsed float32
 }
 
-func NewCQC() (*CQC, error) {
+type Package struct {
+	Name      string
+	Coverage  float32
+	Failed    int
+	Elapsed   float32
+	UnCovered []string
+	Tests     []*TestCase
+}
+
+var pkgMap = make(map[string]*Package)
+
+func InstallDependencies() {
+	//@todo install the missing dependencies
+}
+
+func ProjectRoot() string {
 	_, file, _, ok := runtime.Caller(1)
 	if ok {
-		fPath := filepath.FromSlash(caller)
-		if !strings.HasSuffix(file, fPath) {
-			return nil, fmt.Errorf("this method can be called only from ${root}/script/builder.go")
-		}
-		b := &CQC{
-			root: strings.ReplaceAll(file, fPath, ""),
-		}
 		p := filepath.Dir(file)
-		if _, err := os.ReadFile(filepath.Join(p, "go.mod")); err == nil {
-			return b, nil
-		} else if _, err = os.ReadFile(filepath.Join(b.root, "go.mod")); err == nil {
-			return b, nil
+		for {
+			if _, err := os.ReadFile(filepath.Join(p, "go.mod")); err == nil {
+				return p
+			} else {
+				p = filepath.Dir(p)
+			}
 		}
 	}
-	return nil, fmt.Errorf("this method can be called only from ${root}/script/builder.go")
+	panic("Can't figure out project root directory")
 }
 
-func (b CQC) ProjectRoot() string {
-	return b.root
+func NewCQC() *cQC {
+	cqc := &cQC{
+		err: nil,
+	}
+	cqc.root = ProjectRoot()
+	return cqc
 }
 
-func (b *CQC) Clean() error {
+func (cqc *cQC) ProjectRoot() string {
+	return cqc.root
+}
+
+func (cqc *cQC) validate() {
+	if cqc.err != nil {
+		log.Fatalf("Runs into error %v", cqc.err)
+	}
+}
+
+func (cqc *cQC) Clean() *cQC {
+	cqc.validate()
 	fmt.Println("Clean project...")
-	os.RemoveAll(filepath.Join(b.root, target))
-	return nil
+	os.RemoveAll(filepath.Join(cqc.root, target))
+	return cqc
+}
+
+func getPkg(pgkName string) *Package {
+	if v, o := pkgMap[pgkName]; o {
+		return v
+	} else {
+		v = &Package{
+			Name: pgkName,
+		}
+		pkgMap[pgkName] = v
+		return v
+	}
+}
+
+func generateTestReport(path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to open the file %v", path))
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	// optionally, resize scanner's capacity for lines over 64K, see next example
+	var previous TestCase
+	for scanner.Scan() {
+		text := scanner.Text()
+		c := TestCase{}
+		json.Unmarshal([]byte(text), &c)
+		pkg := getPkg(c.Package)
+		if len(c.Test) == 0 {
+			if strings.Contains(c.Output, "coverage:") {
+				// @todo parse coverage
+				pkg.Coverage = 0
+			}
+			pkg.Elapsed = c.Elapsed
+			continue
+		}
+		pkg.Tests = append(pkg.Tests, &c)
+		if strings.EqualFold(c.Action, "fail") {
+			pkg.Failed++
+		}
+		if c.Test == previous.Test && c.Package == previous.Package {
+			previous.Output = previous.Output + c.Output
+			previous.Action = c.Action
+			previous.Elapsed = c.Elapsed
+		} else {
+			previous = c
+		}
+	}
+	if err = scanner.Err(); err != nil {
+		log.Fatal(fmt.Sprintf("failed to read the file %v, %+v", path, err))
+	}
+}
+
+func processCoverage(path string) {
+	file, err := os.Open(path)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("failed to open the file %v", path))
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		text := scanner.Text()
+		entries := strings.Split(text, "/")
+		l := strings.TrimSpace(entries[len(entries)-1])
+		if strings.HasSuffix(l, "0") {
+			pkgName := strings.Join(entries[0:len(entries)-1], "/")
+			// @todo corner case : no test at all
+			if pkg := getPkg(pkgName); pkg != nil {
+				pkg.UnCovered = append(pkg.UnCovered, l)
+			}
+		}
+	}
+	d, _ := json.MarshalIndent(pkgMap, "", "\t")
+	if e := os.WriteFile(filepath.Join(filepath.Dir(path), testJson), d, os.ModePerm); e != nil {
+		log.Fatal(fmt.Sprintf("failed to generate coverage report %+v", e))
+	}
 }
 
 // Test run the test with -race, -cover, -fuzz and -bench
-func (b *CQC) Test() error {
+func (cqc *cQC) Test(args ...string) *cQC {
+	cqc.validate()
 	fmt.Println("Test project...")
-	os.Chdir(b.root)
-	buildDir := filepath.Join(b.root, target)
+	os.Chdir(cqc.root)
+	buildDir := filepath.Join(cqc.root, target)
 	os.MkdirAll(buildDir, os.ModePerm)
-	out, err := exec.Command("go", "test", "-v", "-json", "./...", "-coverprofile", filepath.Join(buildDir, coverage)).CombinedOutput()
+	params := []string{"test", "-v", "-json", "./...", "-coverprofile", filepath.Join(buildDir, coverage)}
+	params = append(params, args...)
+	out, err := exec.Command("go", params...).CombinedOutput()
+	cqc.err = err
 	fmt.Println(string(out))
-	if err != nil {
-		return err
-	}
 	os.WriteFile(filepath.Join(buildDir, testData), out, os.ModePerm)
-	return err
+	generateTestReport(filepath.Join(buildDir, testData))
+	processCoverage(filepath.Join(buildDir, coverage))
+	return cqc
 }
 
 // Build walk from project root dir and run build command for each executable
 // and place the executable at ${project_root}/bin; in case there are more than one executable
-func (b *CQC) Build() error {
+func (cqc *cQC) Build() *cQC {
 	fmt.Println("Building project ...")
 	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
-	return cmd.Run()
+	cmd.Run()
+	return cqc
 }
 
-func (b *CQC) SecScan() error {
+func (cqc *cQC) SecScan() error {
 	//@todo gosec https://opensource.com/article/20/9/gosec
 	return nil
 }
 
-func (w *CQC) StaticCheck() error {
+func (cqc *cQC) StaticCheck() error {
 	panic("@todo https://staticcheck.io/docs/getting-started/")
 }
 
-func (b *CQC) Cyclomatic() error {
+func (cqc *cQC) Cyclomatic() error {
 
 	panic("@todo https://github.com/fzipp/gocyclo")
 }

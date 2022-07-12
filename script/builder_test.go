@@ -1,12 +1,82 @@
 package script
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"github.com/thedevsaddam/gojsonq/v2"
+	"os"
 	"testing"
 )
 
-func TestName(t *testing.T) {
-	setCaller("script/builder_test.go")
-	NewCQC()
-	assert.Equal(t, 1, 2)
+type ScriptTestSuite struct {
+	suite.Suite
+	args []string
+}
+
+func (suit *ScriptTestSuite) SetupTest() {
+	suit.args = []string{"-run", "TestNormal*"}
+}
+
+// In order for 'go test' to run this suite, we need to create
+// a normal test function and pass our suite to suite.Run
+func TestScriptTestSuite(t *testing.T) {
+	suite.Run(t, new(ScriptTestSuite))
+}
+
+func (suit *ScriptTestSuite) TestCleanTestFlow() {
+	cqc := NewCQC()
+	cqc.Clean()
+
+	_, err := os.Stat("./target/coverage.data")
+	require.Error(suit.T(), err, "should no coverage.data")
+	_, err = os.Stat("./target/test.data")
+	require.Error(suit.T(), err, "should no test.data")
+	_, err = os.Stat("./target/test.json")
+	require.Error(suit.T(), err, "should no test.json")
+	cqc.Test(suit.args...)
+	_, err = os.Stat("./target/coverage.data")
+	require.NoError(suit.T(), err, "should have coverage.data")
+	_, err = os.Stat("./target/test.data")
+	require.NoError(suit.T(), err, "should have test.data")
+	_, err = os.Stat("./target/test.json")
+	require.NoError(suit.T(), err, "should have test.json")
+}
+
+func (suit *ScriptTestSuite) TestJsonDataIncludeDummy() {
+	cqc := NewCQC()
+	cqc.Clean()
+	cqc.Test(suit.args...)
+	data, err := os.ReadFile("./target/test.json")
+	require.NoError(suit.T(), err, "test.json should be generated")
+	assert.NotEmpty(suit.T(), data)
+	j := gojsonq.New(gojsonq.WithSeparator("#")).FromString(string(data)).Find("github.com/kcmvp/gbt/script/sandbox/dummy")
+	assert.NotNil(suit.T(), j)
+	b, _ := json.Marshal(j)
+	pkg := Package{}
+	err = json.Unmarshal(b, &pkg)
+	assert.Equal(suit.T(), "github.com/kcmvp/gbt/script/sandbox/dummy", pkg.Name)
+	assert.Equal(suit.T(), float32(0), pkg.Coverage)
+	assert.Equal(suit.T(), 0, len(pkg.UnCovered))
+	assert.Equal(suit.T(), 0, pkg.Failed)
+}
+
+func (suit *ScriptTestSuite) TestJsonDataUncovered() {
+	pkgName := "github.com/kcmvp/gbt/script"
+	cqc := NewCQC()
+	cqc.Clean()
+	cqc.Test(suit.args...)
+	data, err := os.ReadFile("./target/test.json")
+	require.NoError(suit.T(), err, "test.json should be generated")
+	assert.NotEmpty(suit.T(), data)
+	j := gojsonq.New(gojsonq.WithSeparator("#")).FromString(string(data)).Find(pkgName)
+	assert.NotNil(suit.T(), j)
+	b, _ := json.Marshal(j)
+	pkg := Package{}
+	err = json.Unmarshal(b, &pkg)
+	assert.Equal(suit.T(), pkgName, pkg.Name)
+	assert.Equal(suit.T(), float32(0), pkg.Coverage)
+	assert.Equal(suit.T(), 126, len(pkg.UnCovered))
+	assert.Equal(suit.T(), 0, pkg.Failed)
 }
