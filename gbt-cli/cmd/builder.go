@@ -11,13 +11,14 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"text/template"
 )
 
 //go:embed template/builder.tmpl
 var builderTmp string
 
-var folder = "script"
-var builder = "builder.go"
+var defaultBuilderDir = "scripts"
+var defaultBuilder = "builder.go"
 var scriptModule = "github.com/kcmvp/gbt/script"
 
 type builderFlag struct {
@@ -27,8 +28,8 @@ type builderFlag struct {
 var bFlag = builderFlag{}
 
 func importScriptModule(ctxt context.Context) {
-	log.Fatalf("There is no mod in the context")
-	mod, _ := ctxt.Value("Mod").(*modfile.File)
+	data, _ := os.ReadFile("go.mod")
+	mod, _ := modfile.Parse("go.mod", data, nil)
 	has := false
 	for _, require := range mod.Require {
 		if has = require.Mod.Path == scriptModule; has {
@@ -36,9 +37,9 @@ func importScriptModule(ctxt context.Context) {
 		}
 	}
 	if !has || bFlag.update {
-		action := "install"
+		action := "installing"
 		if has {
-			action = "update"
+			action = "updating"
 		}
 		fmt.Println(fmt.Sprintf("%s %s", action, scriptModule))
 		output, _ := exec.Command("go", "get", scriptModule).CombinedOutput()
@@ -46,29 +47,50 @@ func importScriptModule(ctxt context.Context) {
 	}
 }
 
-func generateBuilder(ctxt context.Context) {
-	if _, err := os.Stat(folder); err != nil {
-		fmt.Println("Creating directory: script")
-		if err = os.Mkdir("script", os.ModePerm); err != nil {
-			log.Fatalf("Failed to create folder %s: %v", folder, err)
+func createBuilder() {
+	builder := fmt.Sprintf("%s/%s", defaultBuilderDir, defaultBuilder)
+	if _, err := os.Stat(builder); err != nil {
+		os.Mkdir(defaultBuilderDir, os.ModePerm)
+		if t, err := template.New("defaultBuilder").Parse(builderTmp); err != nil {
+			fmt.Println(fmt.Sprintf("Failed to load the template, %+v", err))
+		} else {
+			if f, err := os.Create(builder); err != nil {
+				fmt.Println(fmt.Sprintf("Failed to create file, %+v", err))
+				return
+			} else {
+				if err = t.Execute(f, nil); err != nil {
+					fmt.Println(fmt.Sprintf("Failed to create file %v, %+v", Application, err))
+				}
+				f.Close()
+				abs, _ := filepath.Abs(f.Name())
+				fmt.Println(fmt.Sprintf("create files: %v successfully", abs))
+			}
 		}
 	}
-	f := filepath.Join(folder, builder)
+}
+
+func generateBuilder(ctxt context.Context) {
+	if _, err := os.Stat(defaultBuilderDir); err != nil {
+		fmt.Println("Creating directory: script")
+		if err = os.Mkdir("script", os.ModePerm); err != nil {
+			log.Fatalf("Failed to create defaultBuilderDir %s: %v", defaultBuilderDir, err)
+		}
+	}
+	f := filepath.Join(defaultBuilderDir, defaultBuilder)
 	if _, err := os.Stat(f); err == nil {
 		fmt.Println(fmt.Sprintf("File %s exists", f))
 		return
 	}
 	script.InstallDependencies()
-	// @todo create file
-
+	createBuilder()
 	importScriptModule(ctxt)
 }
 
 func BuilderCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "builder",
+		Use:       "defaultBuilder",
 		Short:     "Generate build script for the project",
-		Long:      "Generate script/builder.go at project root, you can build project by execute : go run script/builder.go",
+		Long:      "Generate script/defaultBuilder.go at project root, you can build project by execute : go run script/defaultBuilder.go",
 		Args:      cobra.OnlyValidArgs,
 		ValidArgs: []string{"update"},
 		Run: func(cmd *cobra.Command, args []string) {

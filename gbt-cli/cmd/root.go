@@ -16,9 +16,6 @@ func preValidateE(cmd *cobra.Command, args []string) error {
 		if _, err = modfile.Parse("go.mod", data, nil); err != nil {
 			return runFromRootMsg
 		}
-		//else {
-		//	context.WithValue(cmd.Context(), Mod, f)
-		//}
 	}
 	return nil
 }

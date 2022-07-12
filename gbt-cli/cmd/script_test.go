@@ -66,7 +66,7 @@ func (s *ScriptTestSuit) TestWithExistingConfig() {
 }
 
 func (s ScriptTestSuit) TestBuilder() {
-	out, err := exec.Command("go", "run", filepath.Join(script.ProjectRoot(), "main.go"), "builder").CombinedOutput()
+	out, err := exec.Command("go", "run", filepath.Join(script.ProjectRoot(), "main.go"), "defaultBuilder").CombinedOutput()
 	fmt.Println(string(out))
 	require.NoError(s.T(), err)
 	pwd, _ := os.Getwd()
