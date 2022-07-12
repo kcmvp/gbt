@@ -2,7 +2,7 @@ package cmd_test
 
 import (
 	"fmt"
-	"github.com/kcmvp/gbt/gbt-cli/cmd"
+	"github.com/kcmvp/gbt/gbtc/cmd"
 	"github.com/kcmvp/gbt/script"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
