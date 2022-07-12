@@ -22,7 +22,7 @@ func preValidateE(cmd *cobra.Command, args []string) error {
 
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "gbt-cli",
+		Use:               "gbtc",
 		Short:             "gbt scaffold commands",
 		PersistentPreRunE: preValidateE,
 		Run: func(cmd *cobra.Command, args []string) {

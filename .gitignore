@@ -15,8 +15,9 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 .idea
-gbt-cli/gbt-cli
-gbt-cli/application.yml
+gbtc/gbt-cli
+gbtc/application.yml
 target
+gbtc
 scripts
 
