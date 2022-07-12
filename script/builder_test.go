@@ -77,6 +77,6 @@ func (suit *ScriptTestSuite) TestJsonDataUncovered() {
 	err = json.Unmarshal(b, &pkg)
 	assert.Equal(suit.T(), pkgName, pkg.Name)
 	assert.Equal(suit.T(), float32(0), pkg.Coverage)
-	assert.Equal(suit.T(), 120, len(pkg.UnCovered))
+	assert.Equal(suit.T(), 126, len(pkg.UnCovered))
 	assert.Equal(suit.T(), 0, pkg.Failed)
 }
