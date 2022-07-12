@@ -2,6 +2,7 @@ package script
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -14,18 +15,23 @@ import (
 )
 
 type cQC struct {
-	root string
-	err  error
+	root   string
+	target string
+	err    error
 }
 
 //var caller = "script/builder.go"
 
 const (
-	target   = "target"
-	coverage = "coverage.data"
-	testData = "test.data"
-	testJson = "test.json"
-	report   = "index.html"
+	target          = "target"
+	coverage        = "coverage.data"
+	testData        = "test.data"
+	testJson        = "test.json"
+	secJson         = "security.json"
+	staticJson      = "static.json"
+	report          = "index.html"
+	secScanTool     = "github.com/securego/gosec/v2/cmd/gosec@latest"
+	staticCheckTool = "honnef.co/go/tools/cmd/staticcheck@latest"
 )
 
 type TestCase struct {
@@ -71,11 +77,16 @@ func NewCQC() *cQC {
 		err: nil,
 	}
 	cqc.root = ProjectRoot()
+	cqc.target = filepath.Join(cqc.root, target)
 	return cqc
 }
 
 func (cqc *cQC) ProjectRoot() string {
 	return cqc.root
+}
+
+func (cqc *cQC) BuildTarget() string {
+	return cqc.target
 }
 
 func (cqc *cQC) validate() {
@@ -87,7 +98,7 @@ func (cqc *cQC) validate() {
 func (cqc *cQC) Clean() *cQC {
 	cqc.validate()
 	fmt.Println("Clean project...")
-	os.RemoveAll(filepath.Join(cqc.root, target))
+	os.RemoveAll(cqc.target)
 	return cqc
 }
 
@@ -172,16 +183,15 @@ func (cqc *cQC) Test(args ...string) *cQC {
 	cqc.validate()
 	fmt.Println("Test project...")
 	os.Chdir(cqc.root)
-	buildDir := filepath.Join(cqc.root, target)
-	os.MkdirAll(buildDir, os.ModePerm)
-	params := []string{"test", "-v", "-json", "./...", "-coverprofile", filepath.Join(buildDir, coverage)}
+	os.MkdirAll(cqc.target, os.ModePerm)
+	params := []string{"test", "-v", "-json", "./...", "-coverprofile", filepath.Join(target, coverage)}
 	params = append(params, args...)
 	out, err := exec.Command("go", params...).CombinedOutput()
 	cqc.err = err
 	fmt.Println(string(out))
-	os.WriteFile(filepath.Join(buildDir, testData), out, os.ModePerm)
-	generateTestReport(filepath.Join(buildDir, testData))
-	processCoverage(filepath.Join(buildDir, coverage))
+	os.WriteFile(filepath.Join(target, testData), out, os.ModePerm)
+	generateTestReport(filepath.Join(target, testData))
+	processCoverage(filepath.Join(target, coverage))
 	return cqc
 }
 
@@ -193,8 +203,7 @@ func (cqc *cQC) Build(files ...string) *cQC {
 		targetFiles = append(targetFiles, "main.go")
 	}
 
-	buildDir := filepath.Join(cqc.root, target)
-	os.MkdirAll(buildDir, os.ModePerm)
+	os.MkdirAll(cqc.target, os.ModePerm)
 	fmt.Println(fmt.Sprintf("Building project with files: %v", targetFiles))
 	filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
@@ -202,7 +211,7 @@ func (cqc *cQC) Build(files ...string) *cQC {
 		}
 		for _, t := range targetFiles {
 			if strings.EqualFold(info.Name(), t) {
-				output, _ := exec.Command("go", "build", "-o", buildDir, path).CombinedOutput()
+				output, _ := exec.Command("go", "build", "-o", cqc.target, path).CombinedOutput()
 				fmt.Println(string(output))
 			}
 		}
@@ -211,13 +220,42 @@ func (cqc *cQC) Build(files ...string) *cQC {
 	return cqc
 }
 
-func (cqc *cQC) SecScan() error {
-	//@todo gosec https://opensource.com/article/20/9/gosec
-	return nil
+func (cqc *cQC) SecScan() *cQC {
+	_, err := exec.Command("gosec", "-version").CombinedOutput()
+	if err != nil {
+		_, err = exec.Command("go", "install", secScanTool).CombinedOutput()
+	}
+
+	os.MkdirAll(cqc.target, os.ModePerm)
+
+	out, err := exec.Command("gosec", "-fmt", "json", "-out", filepath.Join(cqc.target, secJson), "./...").CombinedOutput()
+	fmt.Println(string(out))
+	return cqc
 }
 
-func (cqc *cQC) StaticCheck() error {
-	panic("@todo https://staticcheck.io/docs/getting-started/")
+func (cqc *cQC) StaticScan() *cQC {
+	_, err := exec.Command("staticcheck", "-version").CombinedOutput()
+	if err != nil {
+		_, err = exec.Command("go", "install", staticCheckTool).CombinedOutput()
+	}
+
+	os.MkdirAll(cqc.target, os.ModePerm)
+	out, err := exec.Command("staticcheck", "-f", "json", "./...").CombinedOutput()
+
+	items := strings.Split(strings.Trim(string(out), "\n"), "\n")
+
+	result := fmt.Sprintf("{\"Total\":%d, \"Issues\": [%s]}", len(items), strings.Join(items, ","))
+
+	var prettyJSON bytes.Buffer
+	if err = json.Indent(&prettyJSON, []byte(result), "", "\t"); err != nil {
+		fmt.Println(err)
+		if e, ok := err.(*json.SyntaxError); ok {
+			log.Printf("syntax error at byte offset %d", e.Offset)
+		}
+	}
+
+	os.WriteFile(filepath.Join(cqc.target, staticJson), prettyJSON.Bytes(), os.ModePerm)
+	return cqc
 }
 
 func (cqc *cQC) Cyclomatic() error {

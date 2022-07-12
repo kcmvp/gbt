@@ -117,6 +117,20 @@ func (suit *ScriptTestSuite) TestJsonDataUncovered() {
 	err = json.Unmarshal(b, &pkg)
 	assert.Equal(suit.T(), pkgName, pkg.Name)
 	assert.Equal(suit.T(), float32(0), pkg.Coverage)
-	assert.Equal(suit.T(), 153, len(pkg.UnCovered))
+	assert.Equal(suit.T(), 177, len(pkg.UnCovered))
 	assert.Equal(suit.T(), 0, pkg.Failed)
+}
+
+func (suit *ScriptTestSuite) TestSecScan() {
+	cqc := NewCQC()
+	cqc.Clean().SecScan()
+	_, err := os.Stat(filepath.Join(cqc.target, "security.json"))
+	require.NoError(suit.T(), err)
+}
+
+func (suit *ScriptTestSuite) TestStaticScan() {
+	cqc := NewCQC()
+	cqc.Clean().StaticScan()
+	_, err := os.Stat(filepath.Join(cqc.target, "static.json"))
+	require.NoError(suit.T(), err)
 }
