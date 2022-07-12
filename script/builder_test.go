@@ -6,7 +6,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/thedevsaddam/gojsonq/v2"
+	"io/fs"
 	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -46,8 +49,7 @@ func (suit *ScriptTestSuite) TestCleanTestFlow() {
 
 func (suit *ScriptTestSuite) TestJsonDataIncludeDummy() {
 	cqc := NewCQC()
-	cqc.Clean()
-	cqc.Test(suit.args...)
+	cqc.Clean().Test(suit.args...)
 	data, err := os.ReadFile("./target/test.json")
 	require.NoError(suit.T(), err, "test.json should be generated")
 	assert.NotEmpty(suit.T(), data)
@@ -60,6 +62,44 @@ func (suit *ScriptTestSuite) TestJsonDataIncludeDummy() {
 	assert.Equal(suit.T(), float32(0), pkg.Coverage)
 	assert.Equal(suit.T(), 0, len(pkg.UnCovered))
 	assert.Equal(suit.T(), 0, pkg.Failed)
+}
+
+func (suit *ScriptTestSuite) TestBuildWithDefault() {
+	cqc := NewCQC()
+	cqc.Clean().Build()
+	found := false
+	filepath.Walk(cqc.root, func(path string, info fs.FileInfo, err error) error {
+		found = strings.EqualFold("main", info.Name()) || strings.EqualFold("main.exe", info.Name())
+		return nil
+	})
+	require.True(suit.T(), found)
+}
+func (suit *ScriptTestSuite) TestBuildWithSpecifiedFiles() {
+	cqc := NewCQC()
+	cqc.Clean().Build("nothing.go")
+	found := false
+	filepath.Walk(cqc.root, func(path string, info fs.FileInfo, err error) error {
+		found = strings.EqualFold("nothing", info.Name()) || strings.EqualFold("nothing.exe", info.Name())
+		return nil
+	})
+	require.True(suit.T(), found)
+}
+
+func (suit *ScriptTestSuite) TestBuildWithMultipleFiles() {
+	cqc := NewCQC()
+	cqc.Clean().Build("nothing.go", "main.go")
+	nothing := false
+	main := false
+	filepath.Walk(cqc.root, func(path string, info fs.FileInfo, err error) error {
+		if !nothing {
+			nothing = strings.EqualFold("nothing", info.Name()) || strings.EqualFold("nothing.exe", info.Name())
+		} else if !main {
+			main = strings.EqualFold("main", info.Name()) || strings.EqualFold("main.exe", info.Name())
+		}
+		return nil
+	})
+	require.True(suit.T(), nothing)
+	require.True(suit.T(), main)
 }
 
 func (suit *ScriptTestSuite) TestJsonDataUncovered() {
@@ -77,6 +117,6 @@ func (suit *ScriptTestSuite) TestJsonDataUncovered() {
 	err = json.Unmarshal(b, &pkg)
 	assert.Equal(suit.T(), pkgName, pkg.Name)
 	assert.Equal(suit.T(), float32(0), pkg.Coverage)
-	assert.Equal(suit.T(), 126, len(pkg.UnCovered))
+	assert.Equal(suit.T(), 153, len(pkg.UnCovered))
 	assert.Equal(suit.T(), 0, pkg.Failed)
 }

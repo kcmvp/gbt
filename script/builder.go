@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -186,10 +187,27 @@ func (cqc *cQC) Test(args ...string) *cQC {
 
 // Build walk from project root dir and run build command for each executable
 // and place the executable at ${project_root}/bin; in case there are more than one executable
-func (cqc *cQC) Build() *cQC {
-	fmt.Println("Building project ...")
-	cmd := exec.Command("go", "build", "-o", "MyApp", ".")
-	cmd.Run()
+func (cqc *cQC) Build(files ...string) *cQC {
+	targetFiles := files
+	if len(targetFiles) == 0 {
+		targetFiles = append(targetFiles, "main.go")
+	}
+
+	buildDir := filepath.Join(cqc.root, target)
+	os.MkdirAll(buildDir, os.ModePerm)
+	fmt.Println(fmt.Sprintf("Building project with files: %v", targetFiles))
+	filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		for _, t := range targetFiles {
+			if strings.EqualFold(info.Name(), t) {
+				output, _ := exec.Command("go", "build", "-o", buildDir, path).CombinedOutput()
+				fmt.Println(string(output))
+			}
+		}
+		return nil
+	})
 	return cqc
 }
 
