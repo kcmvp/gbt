@@ -20,4 +20,5 @@ gbtc/application.yml
 target
 gbtc
 scripts
+.DS_STORE
 

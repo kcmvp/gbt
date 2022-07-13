@@ -126,6 +126,8 @@ github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
 github.com/kcmvp/gbt/env v0.0.0-20220704073724-00d5ba46882e h1:e+3olDHJ6CAuvQGBHrb3aK8CVb90mUOaQaWd+Vl+QY0=
 github.com/kcmvp/gbt/env v0.0.0-20220704073724-00d5ba46882e/go.mod h1:tEapzWrvU6TQlv4386c3P3bcyJWpgZla42j9JYw5HDs=
+github.com/kcmvp/gbt/script v0.0.0-20220712074547-fefa89540a85 h1:8ojunVV+jJH+PILV1RPlrwyDDBkLW3cdefWgB2V4f30=
+github.com/kcmvp/gbt/script v0.0.0-20220712074547-fefa89540a85/go.mod h1:PAzJuD2GBoaYMufBVCMUAgrgdrF26o4OYJNjo4XCuZE=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

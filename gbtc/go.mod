@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/kcmvp/gbt/gbt-cli v0.0.0-20220712073007-4f0fea88df1d
-	github.com/kcmvp/gbt/script v0.0.0-20220704073724-00d5ba46882e
+	github.com/kcmvp/gbt/script v0.0.0-20220712074547-fefa89540a85
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.2
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2
