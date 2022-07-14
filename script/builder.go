@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -48,7 +49,7 @@ type Package struct {
 	Tests     []*TestCase
 }
 
-var pkgMap = make(map[string]*Package)
+//var pkgMap = make(map[string]*Package)
 
 func InstallDependencies() {
 	//@todo install the missing dependencies
@@ -91,36 +92,45 @@ func (cqc *cQC) Clean() *cQC {
 	return cqc
 }
 
-func getPkg(pgkName string) *Package {
-	if v, o := pkgMap[pgkName]; o {
-		return v
-	} else {
-		v = &Package{
-			Name: pgkName,
-		}
-		pkgMap[pgkName] = v
-		return v
-	}
-}
+//func getPkg(pgkName string) *Package {
+//	if v, o := pkgMap[pgkName]; o {
+//		return v
+//	} else {
+//		v = &Package{
+//			Name: pgkName,
+//		}
+//		pkgMap[pgkName] = v
+//		return v
+//	}
+//}
 
-func generateTestReport(path string) {
+func generateTestReport(path string) map[string]*Package {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("failed to open the file %v", path))
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
+	var pkgMap = make(map[string]*Package)
 	// optionally, resize scanner's capacity for lines over 64K, see next example
 	var previous TestCase
 	for scanner.Scan() {
 		text := scanner.Text()
 		c := TestCase{}
 		json.Unmarshal([]byte(text), &c)
-		pkg := getPkg(c.Package)
+		pkg, ok := pkgMap[c.Package]
+		if !ok {
+			pkg = &Package{
+				Name: c.Package,
+			}
+			pkgMap[c.Package] = pkg
+		}
 		if len(c.Test) == 0 {
-			if strings.Contains(c.Output, "coverage:") {
-				// @todo parse coverage
-				pkg.Coverage = 0
+			if strings.HasPrefix(c.Output, "coverage:") {
+				pcts := strings.TrimRight(strings.Fields(c.Output)[1], "%")
+				if pct, err := strconv.ParseFloat(pcts, 2); err == nil {
+					pkg.Coverage = float32(pct / 100)
+				}
 			}
 			pkg.Elapsed = c.Elapsed
 			continue
@@ -140,9 +150,10 @@ func generateTestReport(path string) {
 	if err = scanner.Err(); err != nil {
 		log.Fatal(fmt.Sprintf("failed to read the file %v, %+v", path, err))
 	}
+	return pkgMap
 }
 
-func processCoverage(path string) {
+func processCoverage(path string, pkgMap map[string]*Package) {
 	file, err := os.Open(path)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("failed to open the file %v", path))
@@ -156,7 +167,7 @@ func processCoverage(path string) {
 		if strings.HasSuffix(l, "0") {
 			pkgName := strings.Join(entries[0:len(entries)-1], "/")
 			// @todo corner case : no test at all
-			if pkg := getPkg(pkgName); pkg != nil {
+			if pkg, b := pkgMap[pkgName]; b {
 				pkg.UnCovered = append(pkg.UnCovered, l)
 			}
 		}
@@ -187,9 +198,11 @@ func (cqc *cQC) Test(args ...string) *cQC {
 		}
 		os.Exit(1)
 	}
+
+	//var pkgMap = make(map[string]*Package)
 	os.WriteFile(filepath.Join(cqc.target, testData), out, os.ModePerm)
-	generateTestReport(filepath.Join(cqc.target, testData))
-	processCoverage(filepath.Join(cqc.target, coverage))
+	pkgMap := generateTestReport(filepath.Join(cqc.target, testData))
+	processCoverage(filepath.Join(cqc.target, coverage), pkgMap)
 	return cqc
 }
 
@@ -239,13 +252,8 @@ func (cqc *cQC) StaticScan() *cQC {
 	}
 
 	os.MkdirAll(cqc.target, os.ModePerm)
-	out, err := exec.Command("staticcheck", "-f", "json", "./...").CombinedOutput()
-	if err != nil {
-		log.Fatalf(string(out))
-	}
-
+	out, _ := exec.Command("staticcheck", "-f", "json", "./...").CombinedOutput()
 	items := strings.Split(strings.Trim(string(out), "\n"), "\n")
-
 	result := fmt.Sprintf("{\"Total\":%d, \"Issues\": [%s]}", len(items), strings.Join(items, ","))
 
 	var prettyJSON bytes.Buffer
