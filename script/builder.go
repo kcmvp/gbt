@@ -20,8 +20,6 @@ type cQC struct {
 	err    error
 }
 
-//var caller = "script/builder.go"
-
 const (
 	//target          = "target"
 	coverage        = "coverage.data"
@@ -57,8 +55,9 @@ func InstallDependencies() {
 	//@todo install the missing dependencies
 }
 
-func ProjectRoot() string {
-	_, file, _, ok := runtime.Caller(1)
+func projectRoot() string {
+	_, file, _, ok := runtime.Caller(2)
+	fmt.Println(fmt.Sprintf("file is %s", file))
 	if ok {
 		p := filepath.Dir(file)
 		for {
@@ -76,7 +75,7 @@ func NewCQC() *cQC {
 	cqc := &cQC{
 		err: nil,
 	}
-	cqc.root = ProjectRoot()
+	cqc.root = projectRoot()
 	cqc.target = filepath.Join(cqc.root, "target")
 	return cqc
 }
@@ -189,9 +188,9 @@ func (cqc *cQC) Test(args ...string) *cQC {
 		params = append(params, args...)
 	}
 	out, err := exec.Command("go", params...).CombinedOutput()
-	if err != nil {
-		log.Fatalf("Runs into error %s", err)
-	}
+	//if err != nil {
+	//	log.Fatalf("Runs into error %s", err)
+	//}
 	cqc.err = err
 	fmt.Println(string(out))
 	os.WriteFile(filepath.Join(cqc.target, testData), out, os.ModePerm)
