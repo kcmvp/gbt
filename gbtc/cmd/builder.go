@@ -17,8 +17,8 @@ import (
 //go:embed template/builder.tmpl
 var builderTmp string
 
-var defaultBuilderDir = "scripts"
-var defaultBuilder = "builder.go"
+var builderDir = "scripts"
+var builderScript = "builder.go"
 var scriptModule = "github.com/kcmvp/gbt/script"
 
 type builderFlag struct {
@@ -48,10 +48,10 @@ func importScriptModule(ctxt context.Context) {
 }
 
 func createBuilder() {
-	builder := fmt.Sprintf("%s/%s", defaultBuilderDir, defaultBuilder)
+	builder := fmt.Sprintf("%s/%s", builderDir, builderScript)
 	if _, err := os.Stat(builder); err != nil {
-		os.Mkdir(defaultBuilderDir, os.ModePerm)
-		if t, err := template.New("defaultBuilder").Parse(builderTmp); err != nil {
+		os.Mkdir(builderDir, os.ModePerm)
+		if t, err := template.New("builderScript").Parse(builderTmp); err != nil {
 			fmt.Println(fmt.Sprintf("Failed to load the template, %+v", err))
 		} else {
 			if f, err := os.Create(builder); err != nil {
@@ -70,13 +70,13 @@ func createBuilder() {
 }
 
 func generateBuilder(ctxt context.Context) {
-	if _, err := os.Stat(defaultBuilderDir); err != nil {
+	if _, err := os.Stat(builderDir); err != nil {
 		fmt.Println("Creating directory: scripts")
-		if err = os.Mkdir(defaultBuilderDir, os.ModePerm); err != nil {
-			log.Fatalf("Failed to create defaultBuilderDir %s: %v", defaultBuilderDir, err)
+		if err = os.Mkdir(builderDir, os.ModePerm); err != nil {
+			log.Fatalf("Failed to create builderDir %s: %v", builderDir, err)
 		}
 	}
-	f := filepath.Join(defaultBuilderDir, defaultBuilder)
+	f := filepath.Join(builderDir, builderScript)
 	if _, err := os.Stat(f); err == nil {
 		fmt.Println(fmt.Sprintf("File %s exists", f))
 		return
@@ -89,8 +89,8 @@ func generateBuilder(ctxt context.Context) {
 func BuilderCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:       "builder",
-		Short:     "Generate build script for the project",
-		Long:      "Generate script/defaultBuilder.go at project root, you can build project by execute : go run script/defaultBuilder.go",
+		Short:     "Generate build scripts for the project",
+		Long:      "Generate script/builderScript.go at project root, you can build project by execute : go run script/builderScript.go",
 		Args:      cobra.OnlyValidArgs,
 		ValidArgs: []string{"update"},
 		Run: func(cmd *cobra.Command, args []string) {

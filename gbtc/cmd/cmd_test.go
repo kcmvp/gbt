@@ -17,7 +17,7 @@ type CmdTestSuit struct {
 
 func (s *CmdTestSuit) SetupSuite() {
 	os.Remove(Application)
-	os.RemoveAll(defaultBuilderDir)
+	os.RemoveAll(builderDir)
 	pwd, _ := os.Getwd()
 	s.root = filepath.Dir(pwd)
 }
