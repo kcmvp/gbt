@@ -71,8 +71,8 @@ func createBuilder() {
 
 func generateBuilder(ctxt context.Context) {
 	if _, err := os.Stat(defaultBuilderDir); err != nil {
-		fmt.Println("Creating directory: script")
-		if err = os.Mkdir("script", os.ModePerm); err != nil {
+		fmt.Println("Creating directory: scripts")
+		if err = os.Mkdir(defaultBuilderDir, os.ModePerm); err != nil {
 			log.Fatalf("Failed to create defaultBuilderDir %s: %v", defaultBuilderDir, err)
 		}
 	}
@@ -88,7 +88,7 @@ func generateBuilder(ctxt context.Context) {
 
 func BuilderCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:       "defaultBuilder",
+		Use:       "builder",
 		Short:     "Generate build script for the project",
 		Long:      "Generate script/defaultBuilder.go at project root, you can build project by execute : go run script/defaultBuilder.go",
 		Args:      cobra.OnlyValidArgs,

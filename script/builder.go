@@ -20,10 +20,8 @@ type cQC struct {
 	err    error
 }
 
-//var caller = "script/builder.go"
-
 const (
-	target          = "target"
+	//target          = "target"
 	coverage        = "coverage.data"
 	testData        = "test.data"
 	testJson        = "test.json"
@@ -57,8 +55,9 @@ func InstallDependencies() {
 	//@todo install the missing dependencies
 }
 
-func ProjectRoot() string {
-	_, file, _, ok := runtime.Caller(1)
+func projectRoot() string {
+	_, file, _, ok := runtime.Caller(2)
+	fmt.Println(fmt.Sprintf("file is %s", file))
 	if ok {
 		p := filepath.Dir(file)
 		for {
@@ -76,8 +75,8 @@ func NewCQC() *cQC {
 	cqc := &cQC{
 		err: nil,
 	}
-	cqc.root = ProjectRoot()
-	cqc.target = filepath.Join(cqc.root, target)
+	cqc.root = projectRoot()
+	cqc.target = filepath.Join(cqc.root, "target")
 	return cqc
 }
 
@@ -184,14 +183,19 @@ func (cqc *cQC) Test(args ...string) *cQC {
 	fmt.Println("Test project...")
 	os.Chdir(cqc.root)
 	os.MkdirAll(cqc.target, os.ModePerm)
-	params := []string{"test", "-v", "-json", "./...", "-coverprofile", filepath.Join(target, coverage)}
-	params = append(params, args...)
+	params := []string{"test", "-v", "-json", "./...", "-coverprofile", filepath.Join(cqc.target, coverage)}
+	if len(args) > 0 {
+		params = append(params, args...)
+	}
 	out, err := exec.Command("go", params...).CombinedOutput()
+	//if err != nil {
+	//	log.Fatalf("Runs into error %s", err)
+	//}
 	cqc.err = err
 	fmt.Println(string(out))
-	os.WriteFile(filepath.Join(target, testData), out, os.ModePerm)
-	generateTestReport(filepath.Join(target, testData))
-	processCoverage(filepath.Join(target, coverage))
+	os.WriteFile(filepath.Join(cqc.target, testData), out, os.ModePerm)
+	generateTestReport(filepath.Join(cqc.target, testData))
+	processCoverage(filepath.Join(cqc.target, coverage))
 	return cqc
 }
 

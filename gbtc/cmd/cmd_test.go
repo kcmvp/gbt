@@ -2,26 +2,28 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/kcmvp/gbt/script"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
 type CmdTestSuit struct {
 	suite.Suite
+	root string
 }
 
 func (s *CmdTestSuit) SetupSuite() {
 	os.Remove(Application)
 	os.RemoveAll(defaultBuilderDir)
+	pwd, _ := os.Getwd()
+	s.root = filepath.Dir(pwd)
 }
 
 func (s *CmdTestSuit) SetupTest() {
-	err := os.Chdir(script.ProjectRoot())
-	require.NoError(s.T(), err)
+	os.Chdir(s.root)
 }
 
 func TestCmdTestSuit(t *testing.T) {
@@ -43,7 +45,7 @@ func (s *CmdTestSuit) TestBuilderCmd() {
 	cmd := NewRootCmd()
 	b := bytes.NewBufferString("")
 	cmd.SetOut(b)
-	cmd.SetArgs([]string{"defaultBuilder", "-u"})
+	cmd.SetArgs([]string{"builder", "-u"})
 	err := cmd.Execute()
 	assert.True(s.T(), bFlag.update)
 	require.NoError(s.T(), err)

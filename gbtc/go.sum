@@ -8,6 +8,8 @@ github.com/kcmvp/gbt/gbt-cli v0.0.0-20220712073007-4f0fea88df1d h1:ZoVA5iFX8Dy01
 github.com/kcmvp/gbt/gbt-cli v0.0.0-20220712073007-4f0fea88df1d/go.mod h1:40ALNyX0TJ8ce2pvOgE8On6v0e7/KspJ1K86dKcOk8U=
 github.com/kcmvp/gbt/script v0.0.0-20220704073724-00d5ba46882e h1:2r9/Z4Fy8Vf6YYor+67v+37M3FVm0sZSMJED55GpC5c=
 github.com/kcmvp/gbt/script v0.0.0-20220704073724-00d5ba46882e/go.mod h1:h1Sg8sW5rHcyUJOXZ+MhtBowDXzEej1vdqUf8+5s1d4=
+github.com/kcmvp/gbt/script v0.0.0-20220712074547-fefa89540a85 h1:8ojunVV+jJH+PILV1RPlrwyDDBkLW3cdefWgB2V4f30=
+github.com/kcmvp/gbt/script v0.0.0-20220712074547-fefa89540a85/go.mod h1:PAzJuD2GBoaYMufBVCMUAgrgdrF26o4OYJNjo4XCuZE=
 github.com/kr/pretty v0.3.0 h1:WgNl7dwNpEZ6jJ9k1snq4pZsg7DOEN8hP9Xw0Tsjwk0=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
