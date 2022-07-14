@@ -18,7 +18,7 @@ type ScriptTestSuit struct {
 	root string
 }
 
-var builderMsg = "Generate build script for the project"
+var builderMsg = "Generate build scripts for the project"
 var configMsg = "Generate system configuration files application.yml"
 var notInRootMsg = "Error: please run the command from project root"
 
@@ -31,12 +31,12 @@ func (s *ScriptTestSuit) SetupSuite() {
 func (s *ScriptTestSuit) SetupTest() {
 	os.Chdir(s.root)
 	os.Remove("application.yml")
-	os.RemoveAll(filepath.Join(s.root, "scripts"))
+	//os.RemoveAll(filepath.Join(s.root, "scripts"))
 }
 
 func (w *ScriptTestSuit) TearDownTest() {
 	os.Remove("application.yml")
-	os.RemoveAll("scripts")
+	//os.RemoveAll("scripts")
 }
 
 func (s *ScriptTestSuit) TestRootUsage() {
