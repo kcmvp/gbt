@@ -1,0 +1,125 @@
+{
+	"Total": 8,
+	"Issues": [
+		{
+			"code": "S1038",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 109,
+				"column": 3
+			},
+			"end": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 109,
+				"column": 61
+			},
+			"message": "should use log.Fatalf(...) instead of log.Fatal(fmt.Sprintf(...))"
+		},
+		{
+			"code": "S1038",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 141,
+				"column": 3
+			},
+			"end": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 141,
+				"column": 71
+			},
+			"message": "should use log.Fatalf(...) instead of log.Fatal(fmt.Sprintf(...))"
+		},
+		{
+			"code": "S1038",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 148,
+				"column": 3
+			},
+			"end": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 148,
+				"column": 61
+			},
+			"message": "should use log.Fatalf(...) instead of log.Fatal(fmt.Sprintf(...))"
+		},
+		{
+			"code": "S1038",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 166,
+				"column": 3
+			},
+			"end": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+				"line": 166,
+				"column": 70
+			},
+			"message": "should use log.Fatalf(...) instead of log.Fatal(fmt.Sprintf(...))"
+		},
+		{
+			"code": "SA4006",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder_test.go",
+				"line": 60,
+				"column": 2
+			},
+			"end": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder_test.go",
+				"line": 60,
+				"column": 31
+			},
+			"message": "this value of err is never used"
+		},
+		{
+			"code": "SA4006",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder_test.go",
+				"line": 117,
+				"column": 2
+			},
+			"end": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/builder_test.go",
+				"line": 117,
+				"column": 31
+			},
+			"message": "this value of err is never used"
+		},
+		{
+			"code": "U1000",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/sandbox/dummy/dummy.go",
+				"line": 3,
+				"column": 6
+			},
+			"end": {
+				"file": "",
+				"line": 0,
+				"column": 0
+			},
+			"message": "func happyEcho is unused"
+		},
+		{
+			"code": "U1000",
+			"severity": "error",
+			"location": {
+				"file": "/Users/kcmvp/sandbox/gbt/script/sandbox/maths/math.go",
+				"line": 7,
+				"column": 6
+			},
+			"end": {
+				"file": "",
+				"line": 0,
+				"column": 0
+			},
+			"message": "func min is unused"
+		}
+	]
+}
