@@ -1,0 +1,348 @@
+{
+	"Golang errors": {},
+	"Issues": [
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "78",
+				"url": "https://cwe.mitre.org/data/definitions/78.html"
+			},
+			"rule_id": "G204",
+			"details": "Subprocess launched with variable",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "179: \t}\n180: \tout, err := exec.Command(\"go\", params...).CombinedOutput()\n181: \tif err != nil {\n",
+			"line": "180",
+			"column": "14",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "78",
+				"url": "https://cwe.mitre.org/data/definitions/78.html"
+			},
+			"rule_id": "G204",
+			"details": "Subprocess launched with a potential tainted input or cmd arguments",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "229: \n230: \texec.Command(\"gosec\", \"-fmt\", \"json\", \"-out\", filepath.Join(cqc.target, secJson), \"./...\").CombinedOutput()\n231: \treturn cqc\n",
+			"line": "230",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "78",
+				"url": "https://cwe.mitre.org/data/definitions/78.html"
+			},
+			"rule_id": "G204",
+			"details": "Subprocess launched with a potential tainted input or cmd arguments",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "210: \t\t\tif strings.EqualFold(info.Name(), t) {\n211: \t\t\t\tif output, err := exec.Command(\"go\", \"build\", \"-o\", cqc.target, path).CombinedOutput(); err != nil {\n212: \t\t\t\t\tfmt.Println(string(output))\n",
+			"line": "211",
+			"column": "23",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "145: func processCoverage(path string) {\n146: \tfile, err := os.Open(path)\n147: \tif err != nil {\n",
+			"line": "146",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "106: func generateTestReport(path string) {\n107: \tfile, err := os.Open(path)\n108: \tif err != nil {\n",
+			"line": "107",
+			"column": "15",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "22",
+				"url": "https://cwe.mitre.org/data/definitions/22.html"
+			},
+			"rule_id": "G304",
+			"details": "Potential file inclusion via variable",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "61: \t\tfor {\n62: \t\t\tif _, err := os.ReadFile(filepath.Join(p, \"go.mod\")); err == nil {\n63: \t\t\t\treturn p\n",
+			"line": "62",
+			"column": "17",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G307",
+			"details": "Deferring unsafe method \"Close\" on type \"*os.File\"",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "149: \t}\n150: \tdefer file.Close()\n151: \tscanner := bufio.NewScanner(file)\n",
+			"line": "150",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "MEDIUM",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G307",
+			"details": "Deferring unsafe method \"Close\" on type \"*os.File\"",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "110: \t}\n111: \tdefer file.Close()\n112: \tscanner := bufio.NewScanner(file)\n",
+			"line": "111",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "256: \t}\n257: \tos.WriteFile(filepath.Join(cqc.target, staticJson), prettyJSON.Bytes(), os.ModePerm)\n258: \treturn cqc\n",
+			"line": "257",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "240: \n241: \tos.MkdirAll(cqc.target, os.ModePerm)\n242: \tout, err := exec.Command(\"staticcheck\", \"-f\", \"json\", \"./...\").CombinedOutput()\n",
+			"line": "241",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "237: \tif err != nil {\n238: \t\texec.Command(\"go\", \"install\", staticCheckTool).CombinedOutput()\n239: \t}\n",
+			"line": "238",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "229: \n230: \texec.Command(\"gosec\", \"-fmt\", \"json\", \"-out\", filepath.Join(cqc.target, secJson), \"./...\").CombinedOutput()\n231: \treturn cqc\n",
+			"line": "230",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "227: \n228: \tos.MkdirAll(cqc.target, os.ModePerm)\n229: \n",
+			"line": "228",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "224: \tif err != nil {\n225: \t\texec.Command(\"go\", \"install\", secScanTool).CombinedOutput()\n226: \t}\n",
+			"line": "225",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "204: \tos.MkdirAll(cqc.target, os.ModePerm)\n205: \tfilepath.Walk(\".\", func(path string, info fs.FileInfo, err error) error {\n206: \t\tif info.IsDir() {\n207: \t\t\treturn nil\n208: \t\t}\n209: \t\tfor _, t := range targetFiles {\n210: \t\t\tif strings.EqualFold(info.Name(), t) {\n211: \t\t\t\tif output, err := exec.Command(\"go\", \"build\", \"-o\", cqc.target, path).CombinedOutput(); err != nil {\n212: \t\t\t\t\tfmt.Println(string(output))\n213: \t\t\t\t}\n214: \t\t\t}\n215: \t\t}\n216: \t\treturn nil\n217: \t})\n218: \treturn cqc\n",
+			"line": "205-217",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "203: \tfmt.Println(\"Building project ......\")\n204: \tos.MkdirAll(cqc.target, os.ModePerm)\n205: \tfilepath.Walk(\".\", func(path string, info fs.FileInfo, err error) error {\n",
+			"line": "204",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "189: \t}\n190: \tos.WriteFile(filepath.Join(cqc.target, testData), out, os.ModePerm)\n191: \tgenerateTestReport(filepath.Join(cqc.target, testData))\n",
+			"line": "190",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "174: \tos.Chdir(cqc.root)\n175: \tos.MkdirAll(cqc.target, os.ModePerm)\n176: \tparams := []string{\"test\", \"-v\", \"-json\", \"-coverprofile\", filepath.Join(cqc.target, coverage), \"./...\"}\n",
+			"line": "175",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "173: \tfmt.Println(\"Running unit tests ......\")\n174: \tos.Chdir(cqc.root)\n175: \tos.MkdirAll(cqc.target, os.ModePerm)\n",
+			"line": "174",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "117: \t\tc := TestCase{}\n118: \t\tjson.Unmarshal([]byte(text), \u0026c)\n119: \t\tpkg := getPkg(c.Package)\n",
+			"line": "118",
+			"column": "3",
+			"nosec": false,
+			"suppressions": null
+		},
+		{
+			"severity": "LOW",
+			"confidence": "HIGH",
+			"cwe": {
+				"id": "703",
+				"url": "https://cwe.mitre.org/data/definitions/703.html"
+			},
+			"rule_id": "G104",
+			"details": "Errors unhandled.",
+			"file": "/Users/kcmvp/sandbox/gbt/script/builder.go",
+			"code": "89: \tfmt.Println(\"Clean target ......\")\n90: \tos.RemoveAll(cqc.target)\n91: \treturn cqc\n",
+			"line": "90",
+			"column": "2",
+			"nosec": false,
+			"suppressions": null
+		}
+	],
+	"Stats": {
+		"files": 6,
+		"lines": 297,
+		"nosec": 0,
+		"found": 21
+	},
+	"GosecVersion": "dev"
+}

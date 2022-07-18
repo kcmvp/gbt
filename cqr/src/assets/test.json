@@ -1,0 +1,178 @@
+{
+	"github.com/kcmvp/gbt/script": {
+		"Name": "github.com/kcmvp/gbt/script",
+		"Coverage": 0,
+		"Failed": 0,
+		"Elapsed": 0.152,
+		"UnCovered": [
+			"builder.go:53.29,55.2 0 0",
+			"builder.go:57.27,59.8 2 0",
+			"builder.go:69.2,69.50 1 0",
+			"builder.go:59.8,61.7 2 0",
+			"builder.go:61.7,62.69 1 0",
+			"builder.go:62.69,64.5 1 0",
+			"builder.go:64.10,66.5 1 0",
+			"builder.go:72.20,78.2 3 0",
+			"builder.go:80.38,82.2 1 0",
+			"builder.go:84.38,86.2 1 0",
+			"builder.go:88.30,92.2 3 0",
+			"builder.go:94.38,95.32 1 0",
+			"builder.go:95.32,97.3 1 0",
+			"builder.go:97.8,103.3 3 0",
+			"builder.go:106.38,108.16 2 0",
+			"builder.go:111.2,115.21 4 0",
+			"builder.go:140.2,140.37 1 0",
+			"builder.go:108.16,110.3 1 0",
+			"builder.go:115.21,120.23 5 0",
+			"builder.go:128.3,129.42 2 0",
+			"builder.go:132.3,132.63 1 0",
+			"builder.go:120.23,121.47 1 0",
+			"builder.go:125.4,126.12 2 0",
+			"builder.go:121.47,124.5 1 0",
+			"builder.go:129.42,131.4 1 0",
+			"builder.go:132.63,136.4 3 0",
+			"builder.go:136.9,138.4 1 0",
+			"builder.go:140.37,142.3 1 0",
+			"builder.go:145.35,147.16 2 0",
+			"builder.go:150.2,152.21 3 0",
+			"builder.go:164.2,165.94 2 0",
+			"builder.go:147.16,149.3 1 0",
+			"builder.go:152.21,156.32 4 0",
+			"builder.go:156.32,159.42 2 0",
+			"builder.go:159.42,161.5 1 0",
+			"builder.go:165.94,167.3 1 0",
+			"builder.go:171.43,177.19 5 0",
+			"builder.go:180.2,181.16 2 0",
+			"builder.go:190.2,193.12 4 0",
+			"builder.go:177.19,179.3 1 0",
+			"builder.go:181.16,183.30 2 0",
+			"builder.go:188.3,188.13 1 0",
+			"builder.go:183.30,184.53 1 0",
+			"builder.go:184.53,186.5 1 0",
+			"builder.go:198.45,200.27 2 0",
+			"builder.go:203.2,205.74 3 0",
+			"builder.go:218.2,218.12 1 0",
+			"builder.go:200.27,202.3 1 0",
+			"builder.go:205.74,206.19 1 0",
+			"builder.go:209.3,209.33 1 0",
+			"builder.go:216.3,216.13 1 0",
+			"builder.go:206.19,208.4 1 0",
+			"builder.go:209.33,210.41 1 0",
+			"builder.go:210.41,211.104 1 0",
+			"builder.go:211.104,213.6 1 0",
+			"builder.go:221.32,224.16 3 0",
+			"builder.go:228.2,231.12 3 0",
+			"builder.go:224.16,226.3 1 0",
+			"builder.go:234.35,237.16 3 0",
+			"builder.go:241.2,243.16 3 0",
+			"builder.go:247.2,252.74 4 0",
+			"builder.go:257.2,258.12 2 0",
+			"builder.go:237.16,239.3 1 0",
+			"builder.go:243.16,245.3 1 0",
+			"builder.go:252.74,253.43 1 0",
+			"builder.go:253.43,255.4 1 0",
+			"builder.go:261.36,263.49 1 0"
+		],
+		"Tests": null
+	},
+	"github.com/kcmvp/gbt/script/sandbox/dummy": {
+		"Name": "github.com/kcmvp/gbt/script/sandbox/dummy",
+		"Coverage": 0,
+		"Failed": 0,
+		"Elapsed": 0,
+		"UnCovered": null,
+		"Tests": null
+	},
+	"github.com/kcmvp/gbt/script/sandbox/maths": {
+		"Name": "github.com/kcmvp/gbt/script/sandbox/maths",
+		"Coverage": 0,
+		"Failed": 0,
+		"Elapsed": 0.215,
+		"UnCovered": [
+			"math.go:7.24,9.2 1 0"
+		],
+		"Tests": [
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/maths",
+				"Test": "TestNormalNumberAdd",
+				"Action": "run",
+				"Output": "",
+				"Elapsed": 0
+			},
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/maths",
+				"Test": "TestNormalNumberAdd",
+				"Action": "output",
+				"Output": "=== RUN   TestNormalNumberAdd\n",
+				"Elapsed": 0
+			},
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/maths",
+				"Test": "TestNormalNumberAdd",
+				"Action": "output",
+				"Output": "--- PASS: TestNormalNumberAdd (0.00s)\n",
+				"Elapsed": 0
+			},
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/maths",
+				"Test": "TestNormalNumberAdd",
+				"Action": "pass",
+				"Output": "",
+				"Elapsed": 0
+			}
+		]
+	},
+	"github.com/kcmvp/gbt/script/sandbox/nothing": {
+		"Name": "github.com/kcmvp/gbt/script/sandbox/nothing",
+		"Coverage": 0,
+		"Failed": 0,
+		"Elapsed": 0,
+		"UnCovered": null,
+		"Tests": null
+	},
+	"github.com/kcmvp/gbt/script/sandbox/nothingmain": {
+		"Name": "github.com/kcmvp/gbt/script/sandbox/nothingmain",
+		"Coverage": 0,
+		"Failed": 0,
+		"Elapsed": 0,
+		"UnCovered": null,
+		"Tests": null
+	},
+	"github.com/kcmvp/gbt/script/sandbox/string": {
+		"Name": "github.com/kcmvp/gbt/script/sandbox/string",
+		"Coverage": 0,
+		"Failed": 0,
+		"Elapsed": 0.113,
+		"UnCovered": null,
+		"Tests": [
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/string",
+				"Test": "TestNormalStringAdd",
+				"Action": "run",
+				"Output": "",
+				"Elapsed": 0
+			},
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/string",
+				"Test": "TestNormalStringAdd",
+				"Action": "output",
+				"Output": "=== RUN   TestNormalStringAdd\n",
+				"Elapsed": 0
+			},
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/string",
+				"Test": "TestNormalStringAdd",
+				"Action": "output",
+				"Output": "--- PASS: TestNormalStringAdd (0.00s)\n",
+				"Elapsed": 0
+			},
+			{
+				"Package": "github.com/kcmvp/gbt/script/sandbox/string",
+				"Test": "TestNormalStringAdd",
+				"Action": "pass",
+				"Output": "",
+				"Elapsed": 0
+			}
+		]
+	}
+}

@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -20,10 +21,10 @@ type cQC struct {
 }
 
 const (
-	//target          = "target"
-	coverage        = "coverage.data"
-	testData        = "test.data"
-	testJson        = "test.json"
+	lineCoverage    = "line_coverage.data"
+	methodCoverage  = "method_coverage.data"
+	testOutput      = "test.data"
+	testReport      = "test.json"
 	secJson         = "security.json"
 	staticJson      = "static.json"
 	report          = "index.html"
@@ -36,19 +37,30 @@ type TestCase struct {
 	Test    string
 	Action  string
 	Output  string
-	Elapsed float32
+	Elapsed float64
+}
+
+type Project struct {
+	Coverage float64
+	Packages map[string]*Package
+}
+
+type File struct {
+	//Name    string
+	Methods []*Method
+}
+
+type Method struct {
+	Name     string
+	Coverage float64
 }
 
 type Package struct {
-	Name      string
-	Coverage  float32
-	Failed    int
-	Elapsed   float32
-	UnCovered []string
-	Tests     []*TestCase
+	//Name     string
+	Coverage float64
+	Elapsed  float64
+	Files    map[string]*File
 }
-
-var pkgMap = make(map[string]*Package)
 
 func InstallDependencies() {
 	//@todo install the missing dependencies
@@ -91,80 +103,74 @@ func (cqc *cQC) Clean() *cQC {
 	return cqc
 }
 
-func getPkg(pgkName string) *Package {
-	if v, o := pkgMap[pgkName]; o {
-		return v
-	} else {
-		v = &Package{
-			Name: pgkName,
-		}
-		pkgMap[pgkName] = v
-		return v
-	}
-}
-
-func generateTestReport(path string) {
-	file, err := os.Open(path)
+func generateTestReport(cqc *cQC) {
+	file, err := os.Open(filepath.Join(cqc.target, testOutput))
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to open the file %v", path))
+		log.Fatal(fmt.Sprintf("failed to open the file %v", filepath.Join(cqc.target, testOutput)))
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	// optionally, resize scanner's capacity for lines over 64K, see next example
-	var previous TestCase
+	project := &Project{
+		Packages: map[string]*Package{},
+	}
 	for scanner.Scan() {
 		text := scanner.Text()
 		c := TestCase{}
 		json.Unmarshal([]byte(text), &c)
-		pkg := getPkg(c.Package)
+		pkg, ok := project.Packages[c.Package]
+		if !ok {
+			pkg = &Package{}
+			project.Packages[c.Package] = pkg
+		}
 		if len(c.Test) == 0 {
-			if strings.Contains(c.Output, "coverage:") {
-				// @todo parse coverage
-				pkg.Coverage = 0
+			if strings.HasPrefix(c.Output, "coverage:") {
+				pcts := strings.TrimRight(strings.Fields(c.Output)[1], "%")
+				if pct, err := strconv.ParseFloat(pcts, 2); err == nil {
+					pkg.Coverage = pct
+				}
 			}
-			pkg.Elapsed = c.Elapsed
-			continue
-		}
-		pkg.Tests = append(pkg.Tests, &c)
-		if strings.EqualFold(c.Action, "fail") {
-			pkg.Failed++
-		}
-		if c.Test == previous.Test && c.Package == previous.Package {
-			previous.Output = previous.Output + c.Output
-			previous.Action = c.Action
-			previous.Elapsed = c.Elapsed
-		} else {
-			previous = c
+			if c.Elapsed > 0 {
+				pkg.Elapsed = c.Elapsed
+			}
 		}
 	}
-	if err = scanner.Err(); err != nil {
-		log.Fatal(fmt.Sprintf("failed to read the file %v, %+v", path, err))
-	}
-}
 
-func processCoverage(path string) {
-	file, err := os.Open(path)
+	mc, err := os.Open(filepath.Join(cqc.target, methodCoverage))
 	if err != nil {
-		log.Fatal(fmt.Sprintf("failed to open the file %v", path))
+		log.Fatal(fmt.Sprintf("failed to open the file %v", filepath.Join(cqc.target, methodCoverage)))
 	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
+	defer mc.Close()
+	scanner = bufio.NewScanner(mc)
 	for scanner.Scan() {
 		text := scanner.Text()
-		entries := strings.Split(text, "/")
-		l := strings.TrimSpace(entries[len(entries)-1])
-		if strings.HasSuffix(l, "0") {
-			pkgName := strings.Join(entries[0:len(entries)-1], "/")
-			// @todo corner case : no test at all
-			if pkg := getPkg(pkgName); pkg != nil {
-				pkg.UnCovered = append(pkg.UnCovered, l)
+		items := strings.Fields(text)
+		coverage, _ := strconv.ParseFloat(strings.TrimRight(items[2], "%"), 2)
+		if strings.EqualFold(items[0], "total:") {
+			project.Coverage = coverage
+		} else {
+			m := &Method{
+				Name:     items[1],
+				Coverage: coverage,
+			}
+			for s, p := range project.Packages {
+				fName := strings.Split(items[0], ":")[0]
+				pkgName := fName[:strings.LastIndex(fName, "/")]
+				if strings.EqualFold(pkgName, s) {
+					if f, ok := p.Files[fName]; ok {
+						f.Methods = append(f.Methods, m)
+					} else {
+						p.Files = map[string]*File{}
+						p.Files[fName] = &File{Methods: []*Method{m}}
+						project.Packages[pkgName] = p
+					}
+				}
 			}
 		}
 	}
-	d, _ := json.MarshalIndent(pkgMap, "", "\t")
-	if e := os.WriteFile(filepath.Join(filepath.Dir(path), testJson), d, os.ModePerm); e != nil {
-		log.Fatal(fmt.Sprintf("failed to generate coverage report %+v", e))
-	}
+	data, _ := json.Marshal(project)
+	var prettyJSON bytes.Buffer
+	json.Indent(&prettyJSON, data, "", "\t")
+	os.WriteFile(filepath.Join(cqc.target, testReport), prettyJSON.Bytes(), os.ModePerm)
 }
 
 // Test run the test with -race, -cover, -fuzz and -bench
@@ -173,7 +179,7 @@ func (cqc *cQC) Test(args ...string) *cQC {
 	fmt.Println("Running unit tests ......")
 	os.Chdir(cqc.root)
 	os.MkdirAll(cqc.target, os.ModePerm)
-	params := []string{"test", "-v", "-json", "-coverprofile", filepath.Join(cqc.target, coverage), "./..."}
+	params := []string{"test", "-v", "-json", "-coverprofile", filepath.Join(cqc.target, lineCoverage), "./..."}
 	if len(args) > 0 {
 		params = append(params, args...)
 	}
@@ -185,11 +191,15 @@ func (cqc *cQC) Test(args ...string) *cQC {
 				fmt.Println(line)
 			}
 		}
+		//@todo failure report
 		os.Exit(1)
 	}
-	os.WriteFile(filepath.Join(cqc.target, testData), out, os.ModePerm)
-	generateTestReport(filepath.Join(cqc.target, testData))
-	processCoverage(filepath.Join(cqc.target, coverage))
+	os.WriteFile(filepath.Join(cqc.target, testOutput), out, os.ModePerm)
+	//  go tool cover -func ./target/coverage.data
+	params = []string{"tool", "cover", "-func", filepath.Join(cqc.target, lineCoverage)}
+	out, _ = exec.Command("go", params...).CombinedOutput()
+	os.WriteFile(filepath.Join(cqc.target, methodCoverage), out, os.ModePerm)
+	generateTestReport(cqc)
 	return cqc
 }
 
@@ -239,13 +249,8 @@ func (cqc *cQC) StaticScan() *cQC {
 	}
 
 	os.MkdirAll(cqc.target, os.ModePerm)
-	out, err := exec.Command("staticcheck", "-f", "json", "./...").CombinedOutput()
-	if err != nil {
-		log.Fatalf(string(out))
-	}
-
+	out, _ := exec.Command("staticcheck", "-f", "json", "./...").CombinedOutput()
 	items := strings.Split(strings.Trim(string(out), "\n"), "\n")
-
 	result := fmt.Sprintf("{\"Total\":%d, \"Issues\": [%s]}", len(items), strings.Join(items, ","))
 
 	var prettyJSON bytes.Buffer
