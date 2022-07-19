@@ -23,13 +23,24 @@ func preValidateE(cmd *cobra.Command, args []string) error {
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "gbtc",
-		Short:             "gbt scaffold commands",
+		PersistentPreRunE: preValidateE,
+		//Run: func(cmd *cobra.Command, args []string) {
+		//	cmd.Usage()
+		//},
+	}
+	cmd.AddCommand(generator())
+	return cmd
+}
+
+func generator() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "gen",
+		Short:             "generate project scaffold",
 		PersistentPreRunE: preValidateE,
 		Run: func(cmd *cobra.Command, args []string) {
 			cmd.Usage()
 		},
 	}
-	cmd.AddCommand(ConfigCmd())
-	cmd.AddCommand(BuilderCmd())
+	cmd.AddCommand(ConfigCmd(), BuilderCmd())
 	return cmd
 }
