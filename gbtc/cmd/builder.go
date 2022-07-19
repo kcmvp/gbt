@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"github.com/kcmvp/gbt/script"
 	"github.com/spf13/cobra"
 	"golang.org/x/mod/modfile"
 	"log"
@@ -81,7 +80,6 @@ func generateBuilder(ctxt context.Context) {
 		fmt.Println(fmt.Sprintf("File %s exists", f))
 		return
 	}
-	script.InstallDependencies()
 	createBuilder()
 	importScriptModule(ctxt)
 }

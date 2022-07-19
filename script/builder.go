@@ -16,8 +16,9 @@ import (
 )
 
 type cQC struct {
-	root   string
-	target string
+	root         string
+	target       string
+	testCoverage *TestCoverage
 }
 
 const (
@@ -46,8 +47,8 @@ type TestCoverage struct {
 }
 
 type File struct {
-	//Name    string
 	Methods []*Method
+	Changes []int
 }
 
 type Method struct {
@@ -60,10 +61,6 @@ type Package struct {
 	Coverage float64
 	Elapsed  float64
 	Files    map[string]*File
-}
-
-func InstallDependencies() {
-	//@todo install the missing dependencies
 }
 
 func projectRoot() string {
@@ -97,6 +94,10 @@ func (cqc *cQC) BuildTarget() string {
 	return cqc.target
 }
 
+func (cqc *cQC) TestCoverage() *TestCoverage {
+	return cqc.testCoverage
+}
+
 func (cqc *cQC) Clean() *cQC {
 	fmt.Println("Clean target ......")
 	os.RemoveAll(cqc.target)
@@ -110,17 +111,18 @@ func generateTestReport(cqc *cQC) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	project := &TestCoverage{
+	testCoverage := &TestCoverage{
 		Packages: map[string]*Package{},
 	}
+	cqc.testCoverage = testCoverage
 	for scanner.Scan() {
 		text := scanner.Text()
 		c := TestCase{}
 		json.Unmarshal([]byte(text), &c)
-		pkg, ok := project.Packages[c.Package]
+		pkg, ok := testCoverage.Packages[c.Package]
 		if !ok {
 			pkg = &Package{}
-			project.Packages[c.Package] = pkg
+			testCoverage.Packages[c.Package] = pkg
 		}
 		if len(c.Test) == 0 {
 			if strings.HasPrefix(c.Output, "coverage:") {
@@ -146,13 +148,13 @@ func generateTestReport(cqc *cQC) {
 		items := strings.Fields(text)
 		coverage, _ := strconv.ParseFloat(strings.TrimRight(items[2], "%"), 2)
 		if strings.EqualFold(items[0], "total:") {
-			project.Coverage = coverage
+			testCoverage.Coverage = coverage
 		} else {
 			m := &Method{
 				Name:     items[1],
 				Coverage: coverage,
 			}
-			for s, p := range project.Packages {
+			for s, p := range testCoverage.Packages {
 				fName := strings.Split(items[0], ":")[0]
 				pkgName := fName[:strings.LastIndex(fName, "/")]
 				if strings.EqualFold(pkgName, s) {
@@ -161,13 +163,13 @@ func generateTestReport(cqc *cQC) {
 					} else {
 						p.Files = map[string]*File{}
 						p.Files[fName] = &File{Methods: []*Method{m}}
-						project.Packages[pkgName] = p
+						testCoverage.Packages[pkgName] = p
 					}
 				}
 			}
 		}
 	}
-	data, _ := json.Marshal(project)
+	data, _ := json.Marshal(testCoverage)
 	var prettyJSON bytes.Buffer
 	json.Indent(&prettyJSON, data, "", "\t")
 	os.WriteFile(filepath.Join(cqc.target, testReport), prettyJSON.Bytes(), os.ModePerm)
