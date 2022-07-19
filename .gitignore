@@ -16,9 +16,9 @@
 # vendor/
 .idea
 gbtc/gbt-cli
-gbtc/application.yml
+application.yml
 target
-# gbtc
 scripts
 .DS_STORE
 
+/gbtc/gbtc
