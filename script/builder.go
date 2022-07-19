@@ -40,7 +40,7 @@ type TestCase struct {
 	Elapsed float64
 }
 
-type Project struct {
+type TestCoverage struct {
 	Coverage float64
 	Packages map[string]*Package
 }
@@ -110,7 +110,7 @@ func generateTestReport(cqc *cQC) {
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	project := &Project{
+	project := &TestCoverage{
 		Packages: map[string]*Package{},
 	}
 	for scanner.Scan() {
@@ -212,7 +212,7 @@ func (cqc *cQC) Build(files ...string) *cQC {
 	}
 	fmt.Println("Building project ......")
 	os.MkdirAll(cqc.target, os.ModePerm)
-	filepath.Walk(".", func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.root, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
