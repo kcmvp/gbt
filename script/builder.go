@@ -16,9 +16,8 @@ import (
 )
 
 type cQC struct {
-	root         string
-	target       string
-	testCoverage *TestCoverage
+	root   string
+	target string
 }
 
 const (
@@ -94,10 +93,6 @@ func (cqc *cQC) BuildTarget() string {
 	return cqc.target
 }
 
-func (cqc *cQC) TestCoverage() *TestCoverage {
-	return cqc.testCoverage
-}
-
 func (cqc *cQC) Clean() *cQC {
 	fmt.Println("Clean target ......")
 	os.RemoveAll(cqc.target)
@@ -114,7 +109,6 @@ func generateTestReport(cqc *cQC) {
 	testCoverage := &TestCoverage{
 		Packages: map[string]*Package{},
 	}
-	cqc.testCoverage = testCoverage
 	for scanner.Scan() {
 		text := scanner.Text()
 		c := TestCase{}
@@ -265,7 +259,7 @@ func (cqc *cQC) StaticScan() *cQC {
 	return cqc
 }
 
-func (cqc *cQC) Cyclomatic() error {
-
-	panic("@todo https://github.com/fzipp/gocyclo")
+func (cqc *cQC) NotCoveredModified() string {
+	cqc.Clean().Test()
+	return ""
 }

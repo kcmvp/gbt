@@ -41,6 +41,6 @@ func generator() *cobra.Command {
 			cmd.Usage()
 		},
 	}
-	cmd.AddCommand(ConfigCmd(), BuilderCmd())
+	cmd.AddCommand(ConfigCmd(), BuilderCmd(), GitHook())
 	return cmd
 }
