@@ -2,7 +2,7 @@ package cmd_test
 
 import (
 	"fmt"
-	"github.com/kcmvp/gbt/gbtc/cmd"
+	"github.com/kcmvp/gbt/gbtc/cmd/common"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -55,17 +55,16 @@ func (s *ScriptTestSuit) TestConfig() {
 	}
 	require.NoError(s.T(), err)
 	pwd, _ := os.Getwd()
-	assert.Contains(s.T(), string(out), fmt.Sprintf("create files: %s/application.yml successfully", pwd))
+	assert.Contains(s.T(), string(out), fmt.Sprintf("generate files: %s/application.yml successfully", pwd))
 }
 
 func (s *ScriptTestSuit) TestWithExistingConfig() {
-	_, err := os.Create(cmd.Application)
+	_, err := os.Create(common.Application)
 	require.NoError(s.T(), err)
 	out, err := exec.Command("go", "run", filepath.Join(s.root, "main.go"), "config").CombinedOutput()
 	fmt.Println(string(out))
 	require.NoError(s.T(), err)
-	pwd, _ := os.Getwd()
-	assert.Contains(s.T(), string(out), fmt.Sprintf("%v/application.yml exists", pwd))
+	assert.Contains(s.T(), string(out), "file application.yml exists")
 }
 
 func TestScriptTestSuit(t *testing.T) {
