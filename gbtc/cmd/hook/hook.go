@@ -19,6 +19,8 @@ var templateDir embed.FS
 var hookMap = map[string]string{"commit-msg": "commit_message_hook.go",
 	"pre-push": "pre_push_hook.go"}
 
+var goGit = "github.com/go-git/go-git/v5"
+
 func processHookScript(ctx context.Context) {
 	pwd, _ := os.Getwd()
 	lookup := []string{pwd, filepath.Dir(pwd)}
@@ -49,6 +51,8 @@ func processHookScript(ctx context.Context) {
 				common.GenerateFile(ctx, string(data), filepath.Join(common.ScriptDir, v), nil)
 			}
 		}
+		common.ImportScript(ctx, false)
+		common.ImportModule(ctx, goGit, false)
 	} else {
 		fmt.Printf("%s is no git repository", pwd)
 	}
