@@ -5,19 +5,21 @@ package main
 import (
 	"github.com/go-git/go-git/v5"
 	"github.com/kcmvp/gbt/script"
+	"log"
 	"os"
 )
 
 func main() {
 	git.PlainOpen("")
 	cqc := script.NewCQC()
-	cqc.Clean().Test()
+	cqc.Clean().Test(0.35, 0.85)
 	if cqc.Error() != nil {
-		os.Exit(1)
+		log.Fatalf("%v", cqc.Error())
 	} else {
 		// scripts/coverage.data must be exists
 		// todo compare coverage with the test output must be equal
 		// todo local coverage must >= remote coverage
+		// git diff HEAD^^ gbtc/scripts/coverage.data
 		os.Exit(0)
 	}
 }

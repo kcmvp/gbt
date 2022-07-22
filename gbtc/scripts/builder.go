@@ -1,8 +1,5 @@
 //go:build gbt
 
-
-
-
 package main
 
 import "github.com/kcmvp/gbt/script"
