@@ -18,6 +18,7 @@ import (
 type cQC struct {
 	root   string
 	target string
+	err    error
 }
 
 const (
@@ -97,6 +98,10 @@ func (cqc *cQC) Clean() *cQC {
 	fmt.Println("Clean target ......")
 	os.RemoveAll(cqc.target)
 	return cqc
+}
+
+func (cqc *cQC) Error() error {
+	return cqc.err
 }
 
 func generateTestReport(cqc *cQC) {
@@ -187,8 +192,8 @@ func (cqc *cQC) Test(args ...string) *cQC {
 				fmt.Println(line)
 			}
 		}
-		//@todo failure report
-		os.Exit(1)
+		cqc.err = err
+		return cqc
 	}
 	os.WriteFile(filepath.Join(cqc.target, testOutput), out, os.ModePerm)
 	//  go tool cover -func ./target/coverage.data
@@ -215,6 +220,7 @@ func (cqc *cQC) Build(files ...string) *cQC {
 		for _, t := range targetFiles {
 			if strings.EqualFold(info.Name(), t) {
 				if output, err := exec.Command("go", "build", "-o", cqc.target, path).CombinedOutput(); err != nil {
+					cqc.err = err
 					fmt.Println(string(output))
 				}
 			}
