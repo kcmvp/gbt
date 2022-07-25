@@ -9,10 +9,9 @@ import (
 
 func main() {
 
-	arg1, _ := os.Args[1]
-	arg2, _ := os.Args[2]
-	fmt.Printf("commits are %s, %s", arg1, arg2)
-	os.Exit(1)
+	fmt.Println(os.Args[1])
+	fmt.Println(os.Args[2])
+	//os.Exit(1)
 
 	//cqc := script.NewCQC(0.35, 0.85)
 	//cqc.Clean().Test()
