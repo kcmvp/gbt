@@ -136,8 +136,8 @@ func (cqc *cQC) validateCoverage() {
 	for scanner.Scan() {
 		s := scanner.Text()
 		if c, err := strconv.ParseFloat(s, 64); err == nil {
-			if cqc.Coverage < cqc.maxCoverage && cqc.Coverage < c {
-				cqc.err = fmt.Errorf("coverage decreases from %f to %f", c, cqc.Coverage)
+			if cqc.Coverage < cqc.minCoverage {
+				cqc.err = fmt.Errorf("coverage %f less than min %f", cqc.Coverage, cqc.minCoverage)
 			} else if cqc.Coverage != c {
 				// update only when current coverage > recorded coverage
 				f.Truncate(0)
