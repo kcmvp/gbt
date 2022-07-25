@@ -11,8 +11,8 @@ import (
 
 func main() {
 	git.PlainOpen("")
-	cqc := script.NewCQC()
-	cqc.Clean().Test(0.35, 0.85)
+	cqc := script.NewCQC(0.35, 0.85)
+	cqc.Clean().Test()
 	if cqc.Error() != nil {
 		log.Fatalf("%v", cqc.Error())
 	} else {

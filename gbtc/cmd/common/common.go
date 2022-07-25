@@ -19,6 +19,7 @@ const ApplicationTest = "application-test.yml"
 const scriptModule = "github.com/kcmvp/gbt/script"
 const ProjectRootDir = "projectRootDir"
 const ScriptDir = "scripts"
+const VersionedCoverage = "versioned_coverage.data"
 
 var RunFromRootMsg = fmt.Errorf("please run the command from project root")
 

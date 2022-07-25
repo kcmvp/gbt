@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"github.com/kcmvp/gbt/gbtc/cmd/common"
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
 //go:embed builder.tmpl
@@ -21,7 +22,7 @@ func (f *builderFlag) Update() bool {
 var bFlag = builderFlag{}
 
 func generateBuilder(ctx context.Context) {
-	common.GenerateFile(ctx, builderTmp, "scripts/builder.go", nil)
+	common.GenerateFile(ctx, builderTmp, filepath.Join(common.ScriptDir, "builder.go"), nil)
 	common.ImportScript(ctx, bFlag.update)
 }
 

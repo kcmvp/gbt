@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/kcmvp/gbt/gbtc/cmd/common"
 	"io/fs"
 	"log"
 	"os"
@@ -18,6 +19,7 @@ import (
 type cQC struct {
 	rootDir     string
 	targetDir   string
+	scriptsDir  string
 	err         error
 	minCoverage float64
 	maxCoverage float64
@@ -36,6 +38,8 @@ const (
 	secScanTool     = "github.com/securego/gosec/v2/cmd/gosec@latest"
 	staticCheckTool = "honnef.co/go/tools/cmd/staticcheck@latest"
 )
+
+var buildTarget = "target"
 
 type TestCase struct {
 	Package string
@@ -94,7 +98,10 @@ func NewCQC(coverages ...float64) *cQC {
 	if cqc.minCoverage > 0 && cqc.minCoverage >= cqc.maxCoverage {
 		log.Fatalf("invalid coverage range %f ~ %f", cqc.minCoverage, cqc.maxCoverage)
 	}
-	cqc.targetDir = filepath.Join(cqc.rootDir, "targetDir")
+	cqc.targetDir = filepath.Join(cqc.rootDir, buildTarget)
+	cqc.scriptsDir = filepath.Join(cqc.rootDir, common.ScriptDir)
+	os.MkdirAll(cqc.targetDir, os.ModePerm)
+	os.MkdirAll(cqc.scriptsDir, os.ModePerm)
 	return cqc
 }
 
@@ -123,26 +130,24 @@ func (cqc *cQC) validateCoverage() {
 		cqc.err = fmt.Errorf("miss min coverage %f > %f", cqc.minCoverage, cqc.Coverage)
 		return
 	}
-	_, f, _, ok := runtime.Caller(2)
-	if ok {
-		dir := filepath.Dir(f)
-		f, _ := os.OpenFile(filepath.Join(dir, "coverage.data"), os.O_RDWR|os.O_CREATE, os.ModePerm)
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			s := scanner.Text()
-			if c, err := strconv.ParseFloat(s, 64); err == nil {
-				if cqc.Coverage < cqc.maxCoverage && cqc.Coverage < c {
-					cqc.err = fmt.Errorf("coverage decreases from %f to %f", c, cqc.Coverage)
-				} else {
-					f.Truncate(0)
-					f.WriteString(strconv.FormatFloat(c, 'f', 4, 64))
-				}
-			} else {
-				cqc.err = err
+	f, _ := os.OpenFile(filepath.Join(cqc.scriptsDir, common.VersionedCoverage), os.O_RDWR|os.O_CREATE, os.ModePerm)
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		s := scanner.Text()
+		if c, err := strconv.ParseFloat(s, 64); err == nil {
+			if cqc.Coverage < cqc.maxCoverage && cqc.Coverage < c {
+				cqc.err = fmt.Errorf("coverage decreases from %f to %f", c, cqc.Coverage)
+			} else if cqc.Coverage != c {
+				// update only when current coverage > recorded coverage
+				f.Truncate(0)
+				f.WriteString(strconv.FormatFloat(c, 'f', 4, 64))
 			}
+		} else {
+			cqc.err = err
 		}
 	}
+
 }
 
 func (cqc *cQC) processResult() {
