@@ -4,28 +4,30 @@ package main
 
 import (
 	"fmt"
+	"github.com/go-git/go-git/v5"
+	"github.com/kcmvp/gbt/script"
+	"log"
 	"os"
 )
 
 func main() {
 
-	fmt.Println(os.Args[1])
-	fmt.Println(os.Args[2])
-	//os.Exit(1)
-
-	//cqc := script.NewCQC(0.35, 0.85)
-	//cqc.Clean().Test()
-	//if cqc.Error() != nil {
-	//	log.Fatalf("%v", cqc.Error())
-	//} else {
-	//	if rep, err := git.PlainOpen(cqc.RootDir()); err == nil {
-	//		rep.Head()
-	//		rep.Prune()
-	//		commit, _ := object.GetCommit()
-	//		commit.Patch()
-	//	} else {
-	//		log.Fatalf("can't detect the git repository %s", cqc.RootDir())
-	//	}
-	//	os.Exit(0)
-	//}
+	arg1 := os.Args[1]
+	arg2 := os.Args[2]
+	fmt.Println(arg1)
+	fmt.Println(arg2)
+	cqc := script.NewCQC(0.35, 0.85)
+	if rep, err := git.PlainOpen("/Users/kcmvp/sandbox/gbt"); err == nil {
+		// git diff origin/hook HEAD gbtc/scripts/coverage.data
+		if b, err := rep.Branch("hook"); err != nil {
+			log.Fatalf("can open branch %v", err)
+		} else {
+			fmt.Println(b)
+		}
+		os.Exit(1)
+	} else {
+		log.Fatalf("failed to open repository %s", cqc.RootDir())
+	}
+	fmt.Printf("commits are %s, %s", arg1, arg2)
+	os.Exit(1)
 }
