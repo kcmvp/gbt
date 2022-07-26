@@ -21,9 +21,9 @@ func preValidateE(cmd *cobra.Command, args []string) error {
 		if f, err := modfile.Parse("go.mod", data, nil); err != nil {
 			return common.RunFromRootMsg
 		} else {
-			pwd, _ := os.Getwd()
+			//pwd, _ := os.Getwd()
 			ctx := context.WithValue(cmd.Context(), common.Mod, f)
-			ctx = context.WithValue(ctx, common.ProjectRootDir, pwd)
+			//ctx = context.WithValue(ctx, common.ProjectRootDir, pwd)
 			cmd.SetContext(ctx)
 		}
 	}

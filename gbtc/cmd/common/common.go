@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/mod/modfile"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,20 +16,13 @@ const Application = "application.yml"
 const ApplicationTest = "application-test.yml"
 
 const scriptModule = "github.com/kcmvp/gbt/script"
-const ProjectRootDir = "projectRootDir"
 const ScriptDir = "scripts"
-const VersionedCoverage = "versioned_coverage.data"
+const CoverageData = "coverage.data"
 
 var RunFromRootMsg = fmt.Errorf("please run the command from project root")
 
 func GenerateFile(ctx context.Context, content string, name string, data interface{}) {
-	pwd := ctx.Value(ProjectRootDir).(string)
-	target := filepath.Join(pwd, name)
-	dir := filepath.Dir(target)
-	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		log.Fatalf("Failed to create dir %s: %v", dir, err)
-	}
-	if f, err := os.OpenFile(target, os.O_RDWR|os.O_CREATE|os.O_EXCL, os.ModePerm); err == nil {
+	if f, err := os.OpenFile(name, os.O_RDWR|os.O_CREATE|os.O_EXCL, os.ModePerm); err == nil {
 		defer f.Close()
 		if t, err := template.New(name).Parse(content); err != nil {
 			fmt.Println(fmt.Sprintf("Failed to parse template, %+v", err))
@@ -71,4 +63,20 @@ func ImportModule(ctx context.Context, module string, update bool) {
 		output, _ := exec.Command("go", "get", module).CombinedOutput()
 		fmt.Println(string(output))
 	}
+}
+
+func ProjectRoot(dir string) (string, error) {
+	var err error
+	err = fmt.Errorf("not a valid git versioned project")
+	for dir != string(os.PathSeparator) {
+		if _, err = os.Stat(filepath.Join(dir, ".git")); err == nil {
+			return dir, nil
+		} else {
+			dir = filepath.Dir(dir)
+		}
+	}
+	if err != nil {
+		dir = ""
+	}
+	return dir, err
 }

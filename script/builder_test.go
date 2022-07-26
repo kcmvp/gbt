@@ -31,25 +31,25 @@ func (suit *ScriptTestSuite) TestCleanTestFlow() {
 	cqc := NewCQC()
 	cqc.Clean()
 
-	_, err := os.Stat("./targetDir/line_coverage.data")
+	_, err := os.Stat(filepath.Join(cqc.targetDir, "line_coverage.data"))
 	require.Error(suit.T(), err, "should no coverage.data")
-	_, err = os.Stat("./targetDir/test.data")
+	_, err = os.Stat(filepath.Join(cqc.targetDir, "test.data"))
 	require.Error(suit.T(), err, "should no test.data")
-	_, err = os.Stat("./targetDir/test.json")
+	_, err = os.Stat(filepath.Join(cqc.targetDir, "test.json"))
 	require.Error(suit.T(), err, "should no test.json")
 	cqc.Test(suit.args...)
-	_, err = os.Stat("./targetDir/line_coverage.data")
+	_, err = os.Stat(filepath.Join(cqc.targetDir, "line_coverage.data"))
 	require.NoError(suit.T(), err, "should have coverage.data")
-	_, err = os.Stat("./targetDir/test.data")
+	_, err = os.Stat(filepath.Join(cqc.targetDir, "test.data"))
 	require.NoError(suit.T(), err, "should have test.data")
-	_, err = os.Stat("./targetDir/test.json")
+	_, err = os.Stat(filepath.Join(cqc.targetDir, "test.json"))
 	require.NoError(suit.T(), err, "should have test.json")
 }
 
 func (suit *ScriptTestSuite) TestJsonDataIncludeDummy() {
 	cqc := NewCQC()
 	cqc.Clean().Test(suit.args...)
-	data, err := os.ReadFile("./targetDir/test.json")
+	data, err := os.ReadFile(filepath.Join(cqc.targetDir, "test.json"))
 	require.NoError(suit.T(), err, "test.json should be generated")
 	assert.NotEmpty(suit.T(), data)
 	jq := gojsonq.New(gojsonq.WithSeparator("#")).FromString(string(data))
@@ -61,7 +61,7 @@ func (suit *ScriptTestSuite) TestBuildWithDefault() {
 	cqc := NewCQC()
 	cqc.Clean().Build()
 	found := false
-	filepath.Walk(cqc.rootDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
 		found = strings.EqualFold("main", info.Name()) || strings.EqualFold("main.exe", info.Name())
 		return nil
 	})
@@ -71,7 +71,7 @@ func (suit *ScriptTestSuite) TestBuildWithSpecifiedFiles() {
 	cqc := NewCQC()
 	cqc.Clean().Build("nothing.go")
 	found := false
-	filepath.Walk(cqc.rootDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
 		found = strings.EqualFold("nothing", info.Name()) || strings.EqualFold("nothing.exe", info.Name())
 		return nil
 	})
@@ -83,7 +83,7 @@ func (suit *ScriptTestSuite) TestBuildWithMultipleFiles() {
 	cqc.Clean().Build("nothing.go", "main.go")
 	nothing := false
 	main := false
-	filepath.Walk(cqc.rootDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
 		if !nothing {
 			nothing = strings.EqualFold("nothing", info.Name()) || strings.EqualFold("nothing.exe", info.Name())
 		} else if !main {
@@ -100,7 +100,7 @@ func (suit *ScriptTestSuite) TestJsonDataUncovered() {
 	cqc := NewCQC()
 	cqc.Clean()
 	cqc.Test(suit.args...)
-	data, err := os.ReadFile("./targetDir/test.json")
+	data, err := os.ReadFile(filepath.Join(cqc.targetDir, "test.json"))
 	require.NoError(suit.T(), err, "test.json should be generated")
 	assert.NotEmpty(suit.T(), data)
 }

@@ -18,6 +18,6 @@
 gbtc/gbt-cli
 application.yml
 target
-.DS_STORE
 
 /gbtc/gbtc
+.DS_Store

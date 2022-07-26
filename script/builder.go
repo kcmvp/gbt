@@ -17,14 +17,15 @@ import (
 )
 
 type cQC struct {
-	rootDir     string
-	targetDir   string
-	scriptsDir  string
-	err         error
-	minCoverage float64
-	maxCoverage float64
 	Coverage    float64
 	Packages    map[string]*Package
+	err         error
+	maxCoverage float64
+	minCoverage float64
+	modDir      string
+	rootDir     string
+	scriptsDir  string
+	targetDir   string
 }
 
 const (
@@ -66,7 +67,7 @@ type Package struct {
 	Files    map[string]*File
 }
 
-func rootDir() string {
+func modDir() string {
 	_, file, _, ok := runtime.Caller(2)
 	if ok {
 		p := filepath.Dir(file)
@@ -78,12 +79,12 @@ func rootDir() string {
 			}
 		}
 	}
-	panic("Can't figure out project rootDir directory")
+	panic("Can't figure out project modDir directory")
 }
 
 func NewCQC(coverages ...float64) *cQC {
 	cqc := &cQC{
-		rootDir:     rootDir(),
+		modDir:      modDir(),
 		minCoverage: -1,
 		maxCoverage: -1,
 		Packages:    map[string]*Package{},
@@ -98,15 +99,21 @@ func NewCQC(coverages ...float64) *cQC {
 	if cqc.minCoverage > 0 && cqc.minCoverage >= cqc.maxCoverage {
 		log.Fatalf("invalid coverage range %f ~ %f", cqc.minCoverage, cqc.maxCoverage)
 	}
-	cqc.targetDir = filepath.Join(cqc.rootDir, buildTarget)
-	cqc.scriptsDir = filepath.Join(cqc.rootDir, common.ScriptDir)
+	cqc.targetDir = filepath.Join(cqc.modDir, buildTarget)
+	cqc.scriptsDir = filepath.Join(cqc.modDir, common.ScriptDir)
 	os.MkdirAll(cqc.targetDir, os.ModePerm)
 	os.MkdirAll(cqc.scriptsDir, os.ModePerm)
 	return cqc
 }
 
-func (cqc *cQC) RootDir() string {
-	return cqc.rootDir
+func (cqc *cQC) ModDir() string {
+	return cqc.modDir
+}
+
+func (cqc *cQC) RootDir() (string, error) {
+	var err error
+	cqc.rootDir, err = common.ProjectRoot(cqc.modDir)
+	return cqc.rootDir, err
 }
 
 func (cqc *cQC) TargetDir() string {
@@ -114,7 +121,7 @@ func (cqc *cQC) TargetDir() string {
 }
 
 func (cqc *cQC) Clean() *cQC {
-	fmt.Println("Clean targetDir ......")
+	fmt.Println("clean build directory ......")
 	os.RemoveAll(cqc.targetDir)
 	return cqc
 }
@@ -130,7 +137,7 @@ func (cqc *cQC) validateCoverage() {
 		cqc.err = fmt.Errorf("miss min coverage %f > %f", cqc.minCoverage, cqc.Coverage)
 		return
 	}
-	f, _ := os.OpenFile(filepath.Join(cqc.scriptsDir, common.VersionedCoverage), os.O_RDWR|os.O_CREATE, os.ModePerm)
+	f, _ := os.OpenFile(filepath.Join(cqc.scriptsDir, common.CoverageData), os.O_RDWR|os.O_CREATE, os.ModePerm)
 	defer f.Close()
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
@@ -220,8 +227,8 @@ func (cqc *cQC) processResult() {
 
 // Test run the test with -race, -cover, -fuzz and -bench
 func (cqc *cQC) Test(args ...string) *cQC {
-	fmt.Println("Running unit tests ......")
-	os.Chdir(cqc.rootDir)
+	fmt.Println("run unit test ......")
+	os.Chdir(cqc.modDir)
 	os.MkdirAll(cqc.targetDir, os.ModePerm)
 	params := []string{"test", "-v", "-json", "-coverprofile", filepath.Join(cqc.targetDir, lineCoverage), "./..."}
 	if len(args) > 0 {
@@ -248,7 +255,7 @@ func (cqc *cQC) Test(args ...string) *cQC {
 	return cqc
 }
 
-// Build walk from project rootDir dir and run build command for each executable
+// Build walk from project modDir dir and run build command for each executable
 // and place the executable at ${project_root}/bin; in case there are more than one executable
 func (cqc *cQC) Build(files ...string) *cQC {
 	if cqc.err != nil {
@@ -258,9 +265,9 @@ func (cqc *cQC) Build(files ...string) *cQC {
 	if len(targetFiles) == 0 {
 		targetFiles = append(targetFiles, "main.go")
 	}
-	fmt.Println("Building project ......")
+	fmt.Println("build project ......")
 	os.MkdirAll(cqc.targetDir, os.ModePerm)
-	filepath.Walk(cqc.rootDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
@@ -278,7 +285,7 @@ func (cqc *cQC) Build(files ...string) *cQC {
 }
 
 func (cqc *cQC) SecScan() *cQC {
-	fmt.Println("Scanning security issues ......")
+	fmt.Println("scan security issues ......")
 	_, err := exec.Command("gosec", "-version").CombinedOutput()
 	if err != nil {
 		exec.Command("go", "install", secScanTool).CombinedOutput()
@@ -289,7 +296,7 @@ func (cqc *cQC) SecScan() *cQC {
 }
 
 func (cqc *cQC) StaticScan() *cQC {
-	fmt.Println("Analyzing code ......")
+	fmt.Println("analyze code ......")
 	_, err := exec.Command("staticcheck", "-version").CombinedOutput()
 	if err != nil {
 		exec.Command("go", "install", staticCheckTool).CombinedOutput()
