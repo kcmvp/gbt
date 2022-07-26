@@ -5,11 +5,11 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/kcmvp/gbt/script"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -21,6 +21,16 @@ func main() {
 	if strings.Contains(refs[0], "delete") {
 		os.Exit(0)
 	}
+	build := true
+	flag.BoolVar(&build, "build", true, "build project or not")
+	_, file, _, ok := runtime.Caller(0)
+	fmt.Printf(filepath.Dir(file))
+	os.Exit(1)
+	// run test for all the modules
+	for i, s := range modules() {
+		out, err := exec.Command("go", "run", filepath.Join(s.root, "main.go"), "config").CombinedOutput()
+	}
+
 	cqc := script.NewCQC(0.35, 0.85)
 	rep, err := git.PlainOpen(cqc.RootDir())
 	checkIfError(err)
@@ -62,4 +72,8 @@ func checkIfError(err error) {
 	} else {
 		log.Fatalf("runs into error %v", err)
 	}
+}
+
+func modules() []string {
+	return []string{"."}
 }

@@ -2,9 +2,15 @@
 
 package main
 
-import "github.com/kcmvp/gbt/script"
+import (
+	"flag"
+	"github.com/kcmvp/gbt/gbtc/cmd/common"
+	"github.com/kcmvp/gbt/script"
+)
 
 func main() {
-	cqc := script.NewCQC()
+	build := true
+	flag.BoolVar(&build, "build", true, "build project or not")
+	cqc := script.NewCQC().WithFlag(common.FlagBuild, build)
 	cqc.Clean().Test().Build()
 }

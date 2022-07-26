@@ -61,7 +61,7 @@ func (suit *ScriptTestSuite) TestBuildWithDefault() {
 	cqc := NewCQC()
 	cqc.Clean().Build()
 	found := false
-	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.moduleDir, func(path string, info fs.FileInfo, err error) error {
 		found = strings.EqualFold("main", info.Name()) || strings.EqualFold("main.exe", info.Name())
 		return nil
 	})
@@ -71,7 +71,7 @@ func (suit *ScriptTestSuite) TestBuildWithSpecifiedFiles() {
 	cqc := NewCQC()
 	cqc.Clean().Build("nothing.go")
 	found := false
-	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.moduleDir, func(path string, info fs.FileInfo, err error) error {
 		found = strings.EqualFold("nothing", info.Name()) || strings.EqualFold("nothing.exe", info.Name())
 		return nil
 	})
@@ -83,7 +83,7 @@ func (suit *ScriptTestSuite) TestBuildWithMultipleFiles() {
 	cqc.Clean().Build("nothing.go", "main.go")
 	nothing := false
 	main := false
-	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.moduleDir, func(path string, info fs.FileInfo, err error) error {
 		if !nothing {
 			nothing = strings.EqualFold("nothing", info.Name()) || strings.EqualFold("nothing.exe", info.Name())
 		} else if !main {

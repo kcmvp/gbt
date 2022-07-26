@@ -11,13 +11,16 @@ import (
 	"text/template"
 )
 
-const Mod = "mod"
-const Application = "application.yml"
-const ApplicationTest = "application-test.yml"
+const (
+	Mod             = "mod"
+	Application     = "application.yml"
+	ApplicationTest = "application-test.yml"
 
-const scriptModule = "github.com/kcmvp/gbt/script"
-const ScriptDir = "scripts"
-const CoverageData = "coverage.data"
+	scriptModule = "github.com/kcmvp/gbt/script"
+	ScriptDir    = "scripts"
+	CoverageData = "coverage.data"
+	FlagBuild    = "build"
+)
 
 var RunFromRootMsg = fmt.Errorf("please run the command from project root")
 

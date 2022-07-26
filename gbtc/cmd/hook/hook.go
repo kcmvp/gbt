@@ -31,7 +31,8 @@ func processHookScript(ctx context.Context) {
 			if f, err := os.OpenFile(hook, os.O_RDWR|os.O_CREATE|os.O_EXCL, os.ModePerm); err == nil {
 				fmt.Println(fmt.Sprintf("generate %s hook", k))
 				f.WriteString("#!/bin/sh\n\n")
-				f.WriteString(fmt.Sprintf("go run %s $1 $2\n", filepath.Join(scriptDir, v)))
+				// don't build project by default in the hook
+				f.WriteString(fmt.Sprintf("go run %s -build false $1 $2\n", filepath.Join(scriptDir, v)))
 				f.Close()
 			} else if errors.Is(err, os.ErrExist) {
 				fmt.Println(fmt.Sprintf("%s exists", hook))

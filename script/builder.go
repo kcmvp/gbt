@@ -3,6 +3,7 @@ package script
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/kcmvp/gbt/gbtc/cmd/common"
@@ -22,10 +23,11 @@ type cQC struct {
 	err         error
 	maxCoverage float64
 	minCoverage float64
-	modDir      string
+	moduleDir   string
 	rootDir     string
 	scriptsDir  string
 	targetDir   string
+	ctx         context.Context
 }
 
 const (
@@ -67,7 +69,7 @@ type Package struct {
 	Files    map[string]*File
 }
 
-func modDir() string {
+func moduleDir() string {
 	_, file, _, ok := runtime.Caller(2)
 	if ok {
 		p := filepath.Dir(file)
@@ -79,15 +81,16 @@ func modDir() string {
 			}
 		}
 	}
-	panic("Can't figure out project modDir directory")
+	panic("Can't figure out module directory")
 }
 
 func NewCQC(coverages ...float64) *cQC {
 	cqc := &cQC{
-		modDir:      modDir(),
+		moduleDir:   moduleDir(),
 		minCoverage: -1,
 		maxCoverage: -1,
 		Packages:    map[string]*Package{},
+		ctx:         context.Background(),
 	}
 	if len(coverages) == 1 {
 		cqc.minCoverage = coverages[0]
@@ -99,20 +102,28 @@ func NewCQC(coverages ...float64) *cQC {
 	if cqc.minCoverage > 0 && cqc.minCoverage >= cqc.maxCoverage {
 		log.Fatalf("invalid coverage range %f ~ %f", cqc.minCoverage, cqc.maxCoverage)
 	}
-	cqc.targetDir = filepath.Join(cqc.modDir, buildTarget)
-	cqc.scriptsDir = filepath.Join(cqc.modDir, common.ScriptDir)
+	cqc.targetDir = filepath.Join(cqc.moduleDir, buildTarget)
+	cqc.scriptsDir = filepath.Join(cqc.moduleDir, common.ScriptDir)
 	os.MkdirAll(cqc.targetDir, os.ModePerm)
 	os.MkdirAll(cqc.scriptsDir, os.ModePerm)
 	return cqc
 }
 
-func (cqc *cQC) ModDir() string {
-	return cqc.modDir
+func (cqc *cQC) WithFlag(arg, value interface{}) {
+	cqc.ctx = context.WithValue(cqc.ctx, arg, value)
+}
+
+func (cqc *cQC) FlagValue(arg interface{}) interface{} {
+	return cqc.ctx.Value(arg)
+}
+
+func (cqc *cQC) ModuleDir() string {
+	return cqc.moduleDir
 }
 
 func (cqc *cQC) RootDir() (string, error) {
 	var err error
-	cqc.rootDir, err = common.ProjectRoot(cqc.modDir)
+	cqc.rootDir, err = common.ProjectRoot(cqc.moduleDir)
 	return cqc.rootDir, err
 }
 
@@ -228,7 +239,7 @@ func (cqc *cQC) processResult() {
 // Test run the test with -race, -cover, -fuzz and -bench
 func (cqc *cQC) Test(args ...string) *cQC {
 	fmt.Println("run unit test ......")
-	os.Chdir(cqc.modDir)
+	os.Chdir(cqc.moduleDir)
 	os.MkdirAll(cqc.targetDir, os.ModePerm)
 	params := []string{"test", "-v", "-json", "-coverprofile", filepath.Join(cqc.targetDir, lineCoverage), "./..."}
 	if len(args) > 0 {
@@ -255,9 +266,13 @@ func (cqc *cQC) Test(args ...string) *cQC {
 	return cqc
 }
 
-// Build walk from project modDir dir and run build command for each executable
+// Build walk from module directory and run build command for each executable
 // and place the executable at ${project_root}/bin; in case there are more than one executable
 func (cqc *cQC) Build(files ...string) *cQC {
+	if cqc.FlagValue(common.FlagBuild).(bool) {
+		log.Println("ignore build")
+		return cqc
+	}
 	if cqc.err != nil {
 		log.Fatalf("Runs into error %v", cqc.err)
 	}
@@ -267,7 +282,7 @@ func (cqc *cQC) Build(files ...string) *cQC {
 	}
 	fmt.Println("build project ......")
 	os.MkdirAll(cqc.targetDir, os.ModePerm)
-	filepath.Walk(cqc.modDir, func(path string, info fs.FileInfo, err error) error {
+	filepath.Walk(cqc.moduleDir, func(path string, info fs.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
 		}
